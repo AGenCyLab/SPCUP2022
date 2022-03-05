@@ -31,7 +31,8 @@ class SPCUP22Dataset(Dataset):
         self.mode = mode
         self.dataset_root = pathlib.Path(dataset_root)
 
-        if self.mode == "eval":
+        if self.mode == "eval" and annotations_file_name == "labels.csv":
+            # try to fall back to the default csv file name
             annotations_file_name = "labels_eval_part1.csv"
 
         self.annotations_csv = str(
