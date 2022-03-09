@@ -21,6 +21,7 @@ class IncTSSDNetWrapper(pl.LightningModule):
         exp_lr_scheduler_gamma: float = 0.95,
     ) -> None:
         super().__init__()
+        self.save_hyperparameters()
         self.inc_tssd_net = IncTSSDNet()
         self.learning_rate = learning_rate
         self.exp_lr_scheduler_gamma = exp_lr_scheduler_gamma
@@ -52,7 +53,7 @@ class IncTSSDNetWrapper(pl.LightningModule):
         )
         return {
             "optimizer": optimizer,
-            "scheduler": scheduler,
+            "lr_scheduler": scheduler,
             "monitor": "val_loss",
         }
 

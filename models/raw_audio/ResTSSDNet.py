@@ -22,6 +22,7 @@ class ResTSSDNetWrapper(pl.LightningModule):
         exp_lr_scheduler_gamma: float = 0.95,
     ) -> None:
         super().__init__()
+        self.save_hyperparameters()
         self.res_tssd_net = ResTSSDNet()
         self.learning_rate = learning_rate
         self.exp_lr_scheduler_gamma = exp_lr_scheduler_gamma
@@ -58,7 +59,7 @@ class ResTSSDNetWrapper(pl.LightningModule):
         )
         return {
             "optimizer": optimizer,
-            "scheduler": scheduler,
+            "lr_scheduler": scheduler,
             "monitor": "val_loss",
         }
 
