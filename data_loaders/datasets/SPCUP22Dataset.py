@@ -15,8 +15,7 @@ from torch.utils.data import Dataset
 class SPCUP22Dataset(Dataset):
     def __init__(
         self,
-        dataset_root: str,
-        annotations_file_name: str = "labels.csv",
+        annotations_df: pd.DataFrame,
         audio_duration: int = 6,
         mode: str = "training",
     ):
@@ -29,16 +28,8 @@ class SPCUP22Dataset(Dataset):
             )
 
         self.mode = mode
-        self.dataset_root = pathlib.Path(dataset_root)
 
-        if self.mode == "eval" and annotations_file_name == "labels.csv":
-            # try to fall back to the default csv file name
-            annotations_file_name = "labels_eval_part1.csv"
-
-        self.annotations_csv = str(
-            self.dataset_root.joinpath(annotations_file_name)
-        )
-        self.annotations_df = pd.read_csv(self.annotations_csv)
+        self.annotations_df = annotations_df
         self.num_samples = self.annotations_df["track"].shape[0]
         self.duration = audio_duration
 
@@ -69,16 +60,14 @@ class SPCUP22Dataset(Dataset):
     def __getitem__(self, index) -> Tuple[np.ndarray, int]:
         if self.mode == "training":
             label = self.annotations_df.iloc[index, 1]
-            filename = self.annotations_df.iloc[index, 0]
-            filepath = str(self.dataset_root.joinpath(filename))
+            filepath = self.annotations_df.iloc[index, 0]
             audio = self.read_audio_file(filepath)
 
             return audio, label
         elif self.mode == "eval":
             # evaluation csv has no labels and the filenames are at the
             # 1-th index
-            filename = self.annotations_df.iloc[index, 1]
-            filepath = str(self.dataset_root.joinpath(filename))
+            filepath = self.annotations_df.iloc[index, 1]
             audio = self.read_audio_file(filepath)
             return audio, None
 

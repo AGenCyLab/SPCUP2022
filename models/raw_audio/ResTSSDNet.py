@@ -15,9 +15,16 @@ from models.tssd_net.models import DilatedNet as IncTSSDNet
 
 
 class ResTSSDNetWrapper(pl.LightningModule):
-    def __init__(self, num_classes: int = 5) -> None:
+    def __init__(
+        self,
+        num_classes: int = 5,
+        learning_rate: float = 1e-3,
+        exp_lr_scheduler_gamma: float = 0.95,
+    ) -> None:
         super().__init__()
         self.res_tssd_net = ResTSSDNet()
+        self.learning_rate = learning_rate
+        self.exp_lr_scheduler_gamma = exp_lr_scheduler_gamma
         self.final_layer = nn.Linear(32, num_classes)
 
     def forward(self, x):
@@ -45,9 +52,9 @@ class ResTSSDNetWrapper(pl.LightningModule):
         return logits
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=0.001)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         scheduler = torch.optim.lr_scheduler.ExponentialLR(
-            optimizer, gamma=0.95
+            optimizer, gamma=self.exp_lr_scheduler_gamma
         )
         return {
             "optimizer": optimizer,
