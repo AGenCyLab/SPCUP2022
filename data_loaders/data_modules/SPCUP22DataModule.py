@@ -1,6 +1,8 @@
+from collections import defaultdict
 import pathlib
 import sys
 from typing import Optional
+import numpy as np
 import pandas as pd
 
 ROOT = str(pathlib.Path(__file__).parent.parent.parent)
@@ -104,7 +106,7 @@ class SPCUP22DataModule(pl.LightningDataModule):
     def get_annotation_df(self, dataset_root: pathlib.Path) -> pd.DataFrame:
         csv_path = dataset_root.joinpath(self.annotation_csv_filename)
         df = self.read_annotations_file(str(csv_path))
-        df = self.construct_full_data_paths(df, self.train_data_part1_path)
+        df = self.construct_full_data_paths(df, dataset_root)
         return df
 
     def get_train_val_test_split_for_training(self):
@@ -125,10 +127,9 @@ class SPCUP22DataModule(pl.LightningDataModule):
             random_state=42,
         )
 
-        # subtract test from train and get val set
-        train_labels = labels[list(train_indices)]
+        train_labels = labels[train_indices]
         train_indices, val_indices, _, _ = train_test_split(
-            range(total_num_samples - len(test_indices)),
+            train_indices,
             train_labels,
             stratify=train_labels,
             test_size=self.val_pct,
@@ -159,6 +160,8 @@ class SPCUP22DataModule(pl.LightningDataModule):
                 df_part1, df_part2
             )
             self.data = SPCUP22Dataset(combined_df)
+
+        self.num_classes = len(self.data.annotations_df.iloc[:, 1].unique())
 
         (
             self.train_data,

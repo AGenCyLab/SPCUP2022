@@ -71,10 +71,12 @@ if __name__ == "__main__":
         should_include_unseen_in_training_data=args.include_unseen_in_training_data,
         should_load_eval_data=args.load_eval_data,
     )
+    data_module.prepare_data()
+    data_module.setup()
 
     if args.model_type == "res-tssdnet":
         classifier = ResTSSDNetWrapper(
-            num_classes=training_config["training"]["num_classes"],
+            num_classes=data_module.num_classes,
             learning_rate=training_config["training"]["learning_rate"],
             exp_lr_scheduler_gamma=training_config["training"][
                 "exp_lr_scheduler_gamma"
@@ -82,7 +84,7 @@ if __name__ == "__main__":
         )
     elif args.model_type == "inc-tssdnet":
         classifier = IncTSSDNetWrapper(
-            num_classes=training_config["training"]["num_classes"],
+            num_classes=data_module.num_classes,
             learning_rate=training_config["training"]["learning_rate"],
             exp_lr_scheduler_gamma=training_config["training"][
                 "exp_lr_scheduler_gamma"
@@ -99,14 +101,8 @@ if __name__ == "__main__":
         monitor="val_loss",
         save_last=True,
     )
-    model_summary_callback = ModelSummary(max_depth=2)
-    lr_monitor_callback = LearningRateMonitor(logging_interval="epoch")
 
-    all_callbacks = [
-        checkpoint_callback,
-        model_summary_callback,
-        lr_monitor_callback,
-    ]
+    all_callbacks = [checkpoint_callback]
 
     try:
         wandb_project = training_config["wandb"]["project"]
@@ -116,8 +112,11 @@ if __name__ == "__main__":
         wandb_project = ""
         wandb_entity = ""
 
+    wandb_logger = None
     if wandb_project != "" and wandb_entity != "":
-        wandb_logger = WandbLogger(project=wandb_project, entity=wandb_entity,)
+        wandb_logger = WandbLogger(project=wandb_project, entity=wandb_entity)
+        lr_monitor_callback = LearningRateMonitor(logging_interval="epoch")
+        all_callbacks.append(lr_monitor_callback)
 
     trainer = pl.Trainer(
         gpus=torch.cuda.device_count(),
@@ -130,4 +129,6 @@ if __name__ == "__main__":
     )
 
     trainer.fit(classifier, datamodule=data_module)
+
+    data_module.teardown()
 

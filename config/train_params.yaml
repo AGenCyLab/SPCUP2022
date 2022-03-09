@@ -1,7 +1,6 @@
 tssdnet:
   training:
-    num_classes: 5
-    batch_size: 64
+    batch_size: 128
     learning_rate: 1.0e-3
     exp_lr_scheduler_gamma: 0.95
     save_checkpoint_epoch_interval: 1
