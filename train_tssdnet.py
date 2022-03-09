@@ -111,7 +111,8 @@ if __name__ == "__main__":
     try:
         wandb_project = training_config["wandb"]["project"]
         wandb_entity = training_config["wandb"]["entity"]
-    except:
+    except Exception as exception:
+        print(exception)
         wandb_project = ""
         wandb_entity = ""
 
@@ -120,6 +121,7 @@ if __name__ == "__main__":
 
     trainer = pl.Trainer(
         gpus=torch.cuda.device_count(),
+        logger=wandb_logger,
         max_epochs=args.epochs,
         sync_batchnorm=True,
         accelerator="ddp",
