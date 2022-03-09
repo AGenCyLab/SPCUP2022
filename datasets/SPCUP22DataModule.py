@@ -5,6 +5,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
+<<<<<<< HEAD
 ROOT = str(pathlib.Path(__file__).parent.parent)
 sys.path.append(ROOT)
 
@@ -13,6 +14,16 @@ from utils.config import load_config_file
 from datasets.SPCUP22Dataset import SPCUP22Dataset
 from torch.utils.data import Subset, DataLoader
 from utils.dataset import SPCUP22DatasetDownloader
+=======
+ROOT = str(pathlib.Path(__file__).parent.parent.parent)
+sys.path.append(ROOT)
+
+import pytorch_lightning as pl
+from utils.config.load_config import load_config_file
+from data_loaders.datasets.SPCUP22Dataset import SPCUP22Dataset
+from torch.utils.data import Subset, DataLoader
+from utils.dataset.download_dataset import SPCUP22DatasetDownloader
+>>>>>>> ideas added
 from sklearn.model_selection import train_test_split
 
 
@@ -28,7 +39,10 @@ class SPCUP22DataModule(pl.LightningDataModule):
         should_load_eval_data: bool = False,
         val_pct: float = 0.1,
         test_pct: float = 0.2,
+<<<<<<< HEAD
         transform=None,
+=======
+>>>>>>> ideas added
     ):
         super().__init__()
         self.batch_size = batch_size
@@ -38,7 +52,10 @@ class SPCUP22DataModule(pl.LightningDataModule):
             self.dataset_name
         ]
         self.dataset_root = pathlib.Path(dataset_root)
+<<<<<<< HEAD
         self.transform = transform
+=======
+>>>>>>> ideas added
 
         self.should_include_unseen_in_training_data = (
             should_include_unseen_in_training_data
@@ -146,6 +163,7 @@ class SPCUP22DataModule(pl.LightningDataModule):
         return train_data, val_data, test_data
 
     def setup(self, stage: Optional[str] = None) -> None:
+<<<<<<< HEAD
         # evaluation mode, no training will be done
         if self.should_load_eval_data:
             eval_df = self.get_annotation_df(self.evaluation_data_part1_path)
@@ -158,12 +176,34 @@ class SPCUP22DataModule(pl.LightningDataModule):
         df_part1 = self.get_annotation_df(self.train_data_part1_path)
         self.data = SPCUP22Dataset(df_part1, transform=self.transform)
 
+=======
+        """
+        Description missing
+        :param stage:
+        :return:
+        You could add here the transform
+        """
+        df_part1 = self.get_annotation_df(self.train_data_part1_path)
+        self.data = SPCUP22Dataset(df_part1)
+
+        # evaluation mode, no training will be done
+        if self.should_load_eval_data:
+            eval_df = self.get_annotation_df(self.evaluation_data_part1_path)
+            self.test_data = SPCUP22Dataset(eval_df, mode="eval")
+            self.num_test_samples = self.test_data.num_samples
+            return
+
+>>>>>>> ideas added
         if self.should_include_unseen_in_training_data:
             df_part2 = self.get_annotation_df(self.train_data_part2_path)
             combined_df = self.combine_dataframes_vertically(
                 df_part1, df_part2
             )
+<<<<<<< HEAD
             self.data = SPCUP22Dataset(combined_df, transform=self.transform)
+=======
+            self.data = SPCUP22Dataset(combined_df)
+>>>>>>> ideas added
 
         self.num_classes = len(self.data.annotations_df.iloc[:, 1].unique())
 
