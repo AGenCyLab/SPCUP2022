@@ -1,0 +1,3 @@
+[submodule "models/end-to-end-synthetic-speech-detection"]
+	path = models/end-to-end-synthetic-speech-detection
+	url = https://github.com/ghuawhu/end-to-end-synthetic-speech-detection
