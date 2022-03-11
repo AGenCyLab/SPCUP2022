@@ -5,14 +5,14 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-ROOT = str(pathlib.Path(__file__).parent.parent.parent)
+ROOT = str(pathlib.Path(__file__).parent.parent)
 sys.path.append(ROOT)
 
 import pytorch_lightning as pl
-from utils.config.load_config import load_config_file
-from data_loaders.datasets.SPCUP22Dataset import SPCUP22Dataset
+from utils.config import load_config_file
+from datasets.SPCUP22Dataset import SPCUP22Dataset
 from torch.utils.data import Subset, DataLoader
-from utils.dataset.download_dataset import SPCUP22DatasetDownloader
+from utils.dataset import SPCUP22DatasetDownloader
 from sklearn.model_selection import train_test_split
 
 
@@ -144,15 +144,15 @@ class SPCUP22DataModule(pl.LightningDataModule):
         return train_data, val_data, test_data
 
     def setup(self, stage: Optional[str] = None) -> None:
-        df_part1 = self.get_annotation_df(self.train_data_part1_path)
-        self.data = SPCUP22Dataset(df_part1)
-
         # evaluation mode, no training will be done
         if self.should_load_eval_data:
             eval_df = self.get_annotation_df(self.evaluation_data_part1_path)
             self.test_data = SPCUP22Dataset(eval_df, mode="eval")
             self.num_test_samples = self.test_data.num_samples
             return
+
+        df_part1 = self.get_annotation_df(self.train_data_part1_path)
+        self.data = SPCUP22Dataset(df_part1)
 
         if self.should_include_unseen_in_training_data:
             df_part2 = self.get_annotation_df(self.train_data_part2_path)

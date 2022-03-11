@@ -15,13 +15,17 @@ class SPCUP22DatasetDownloader:
             part1:
                 link: https://www.dropbox.com/s/36yqmymkva2bwdi/spcup_2022_training_part1.zip?dl=1
                 filename: spcup_2022_training_part1.zip
+                default_path: data/spcup22/training/part1/spcup_2022_training_part1 
             part2:
                 link: https://www.dropbox.com/s/wsmlthhri29fb79/spcup_2022_unseen.zip?dl=1
                 filename: spcup_2022_unseen.zip
+                default_path: data/spcup22/training/part2/spcup_2022_unseen
         evaluation:
             part1:
                 link: https://www.dropbox.com/s/ftkyvwxgr9wl7jf/spcup_2022_eval_part1.zip?dl=1
                 filename: spcup_2022_eval_part1.zip
+                default_path: data/spcup22/training/part1/spcup_2022_eval_part1
+
     """
 
     def __init__(
@@ -30,7 +34,7 @@ class SPCUP22DatasetDownloader:
         dataset_name: str = "spcup22",
         unzip_after_download: bool = True,
     ) -> None:
-        self.root = pathlib.Path(__file__).parent.parent.parent
+        self.root = pathlib.Path(__file__).parent.parent
         self.config_file_path = config_file_path
         self.dataset_name = dataset_name
 
