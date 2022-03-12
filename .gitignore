@@ -133,3 +133,4 @@ data
 checkpoints
 *logs*
 wandb
+results

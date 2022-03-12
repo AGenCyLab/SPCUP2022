@@ -70,7 +70,7 @@ def plot_classification_report(
     predicted_probabilities,
     title_suffix,
     save_path,
-    figsize=(30, 10),
+    figsize=(10, 10),
     dpi=300,
 ):
     """
