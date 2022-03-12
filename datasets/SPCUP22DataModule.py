@@ -28,6 +28,7 @@ class SPCUP22DataModule(pl.LightningDataModule):
         should_load_eval_data: bool = False,
         val_pct: float = 0.1,
         test_pct: float = 0.2,
+        transform=None,
     ):
         super().__init__()
         self.batch_size = batch_size
@@ -37,6 +38,7 @@ class SPCUP22DataModule(pl.LightningDataModule):
             self.dataset_name
         ]
         self.dataset_root = pathlib.Path(dataset_root)
+        self.transform = transform
 
         self.should_include_unseen_in_training_data = (
             should_include_unseen_in_training_data
@@ -147,19 +149,21 @@ class SPCUP22DataModule(pl.LightningDataModule):
         # evaluation mode, no training will be done
         if self.should_load_eval_data:
             eval_df = self.get_annotation_df(self.evaluation_data_part1_path)
-            self.test_data = SPCUP22Dataset(eval_df, mode="eval")
+            self.test_data = SPCUP22Dataset(
+                eval_df, mode="eval", transform=self.transform
+            )
             self.num_test_samples = self.test_data.num_samples
             return
 
         df_part1 = self.get_annotation_df(self.train_data_part1_path)
-        self.data = SPCUP22Dataset(df_part1)
+        self.data = SPCUP22Dataset(df_part1, transform=self.transform)
 
         if self.should_include_unseen_in_training_data:
             df_part2 = self.get_annotation_df(self.train_data_part2_path)
             combined_df = self.combine_dataframes_vertically(
                 df_part1, df_part2
             )
-            self.data = SPCUP22Dataset(combined_df)
+            self.data = SPCUP22Dataset(combined_df, transform=self.transform)
 
         self.num_classes = len(self.data.annotations_df.iloc[:, 1].unique())
 
