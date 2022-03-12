@@ -5,8 +5,8 @@ import pathlib
 import torch
 from SPCUP2022.utils.config import load_config_file
 from datasets.SPCUP22DataModule import SPCUP22DataModule
-from models.raw_audio.ResTSSDNet import ResTSSDNetWrapper
-from models.raw_audio.IncTSSDNet import IncTSSDNetWrapper
+from models.raw_audio import ResTSSDNetWrapper
+from models.raw_audio import IncTSSDNetWrapper
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import (
     ModelCheckpoint,

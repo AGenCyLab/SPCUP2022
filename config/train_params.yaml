@@ -7,3 +7,17 @@ tssdnet:
   wandb:
     project: spcup22
     entity: mahieyin-rahmun
+
+svm:
+  features:
+    n_mfcc: 40
+    hop_length: 256
+  params:
+    loss: modified_huber
+    penalty: l2
+    alpha: 1.0e-3
+    verbose: 0
+    random_state: 42
+  training:
+    batch_size: 200
+    epochs: 200
