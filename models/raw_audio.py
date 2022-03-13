@@ -98,9 +98,9 @@ class ResTSSDNetWrapper(pl.LightningModule):
         self, batch, batch_idx: int, dataloader_idx: Optional[int] = None,
     ):
         with torch.no_grad():
-            inputs, labels = batch
+            inputs, _, filepaths = batch
             logits = self.forward(inputs)
-            return logits
+            return logits, filepaths
 
 
 class IncTSSDNetWrapper(pl.LightningModule):
@@ -165,6 +165,6 @@ class IncTSSDNetWrapper(pl.LightningModule):
         self, batch, batch_idx: int, dataloader_idx: Optional[int] = None,
     ):
         with torch.no_grad():
-            inputs, labels = batch
+            inputs, _, filepaths = batch
             logits = self.forward(inputs)
-            return logits
+            return logits, filepaths

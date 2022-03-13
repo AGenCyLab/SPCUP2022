@@ -1,15 +1,18 @@
+from typing import Union, List
 import pathlib
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+from zipfile import ZipFile
 from sklearn.metrics import accuracy_score, f1_score
 import scikitplot as skplt
 import matplotlib.pyplot as plt
 import pytorch_lightning as pl
+import torch
 import torch.nn.functional as F
 
 
 def pytorch_lightning_make_predictions(
-    checkpoint: pl.LightningModule, data_module: pl.LightningDataModule
+    checkpoint: pl.LightningModule,
+    data_module: pl.LightningDataModule,
+    mode: str = "training",
 ):
     """
     only to be used with pytorch lightning checkpoints and data module.
@@ -18,19 +21,33 @@ def pytorch_lightning_make_predictions(
     computes the predicted labels from the probabilities of each sample
     and returns the following:
 
-    actual labels
+    actual labels (an empty list if mode = "eval")
     predicted labels
     predicted probabilities for each label per sample
+    filepaths
+
+    Args:
+        mode: one of ["training", "eval"]
+        By training, it is implied that the predictions are being carried out
+        on a subset of heldout data from the training set and not on the actual
+        eval set. Since the eval set has no labels, it's not possible to have
+        actual labels.
     """
     checkpoint.eval()
-    trainer = pl.Trainer(gpus=[4])
+    trainer = pl.Trainer(gpus=torch.cuda.device_count(), accelerator="ddp")
     predictions = trainer.predict(checkpoint, datamodule=data_module)
 
+    filepaths = []
     flattened_predictions = []
     flattened_probabilities = []
 
     for batch in predictions:
-        for prediction in batch:
+        current_predictions, current_filepaths = batch
+
+        for prediction, filepath in zip(
+            current_predictions, current_filepaths
+        ):
+            filepaths.append(filepath)
             softmax_probabilities = F.softmax(prediction)
             predicted_label = softmax_probabilities.argmax(dim=0)
             flattened_predictions.append(predicted_label.item())
@@ -38,10 +55,16 @@ def pytorch_lightning_make_predictions(
 
     actual_labels = []
 
-    for data in data_module.test_data:
-        actual_labels.append(data[-1])
+    if mode == "training":
+        for data in data_module.test_data:
+            actual_labels.append(data[-1])
 
-    return actual_labels, flattened_predictions, flattened_probabilities
+    return (
+        actual_labels,
+        flattened_predictions,
+        flattened_probabilities,
+        filepaths,
+    )
 
 
 def print_scores(
@@ -115,3 +138,41 @@ def plot_classification_report(
     )
 
     fig.savefig(root.joinpath("roc.eps"), format="eps")
+
+
+def write_answers(
+    submission_path: Union[str, pathlib.Path],
+    flattened_predictions: List[int],
+    filepaths: List[str],
+):
+    """
+    Creates the answer.txt and answer.zip file following the codalab conventions
+
+    Args:
+        submission_path: either a str or a pathlib.Path object with the path
+        to the folder where the answers should be stored
+    
+        flattened_predictions: a 1D list of predictions
+
+        filepaths: a 1D list of filepaths. The indices should correspond to the
+        predictions
+
+    Returns: 
+        None
+    """
+    answers = []
+    answer_txt_file_path = pathlib.Path(submission_path).joinpath(
+        "answer.txt",
+    )
+
+    for prediction, filepath in zip(flattened_predictions, filepaths):
+        filename = pathlib.Path(filepath).name
+        answer = "{}, {}\n".format(filename, prediction)
+        answers.append(answer)
+
+    with open(answer_txt_file_path, "w") as answer_text_file_object:
+        answer_text_file_object.writelines(answers)
+
+    zipObj = ZipFile(str(submission_path.joinpath("answer.zip")), "w")
+    zipObj.write(str(answer_txt_file_path), "answer.txt")
+    zipObj.close()

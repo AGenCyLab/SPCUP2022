@@ -101,7 +101,7 @@ class SPCUP22DataModule(pl.LightningDataModule):
         full paths
         """
         df["track"] = df["track"].apply(
-            lambda track_name: dataset_root.joinpath(track_name)
+            lambda track_name: str(dataset_root.joinpath(track_name))
         )
         return df
 
@@ -183,12 +183,18 @@ class SPCUP22DataModule(pl.LightningDataModule):
 
     def val_dataloader(self):
         return DataLoader(
-            self.val_data, batch_size=self.batch_size, num_workers=8,
+            self.val_data,
+            batch_size=self.batch_size,
+            num_workers=8,
+            shuffle=False,
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.test_data, batch_size=self.batch_size, num_workers=8,
+            self.test_data,
+            batch_size=self.batch_size,
+            num_workers=8,
+            shuffle=False,
         )
 
     def predict_dataloader(self):
