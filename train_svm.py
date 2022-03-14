@@ -18,6 +18,9 @@ def build_parser() -> ArgumentParser:
     parser.add_argument(
         "--checkpoint-save-path", type=str, default="./checkpoints/svm"
     )
+    parser.add_argument(
+        "--include-unseen-data-in-training", action="store_true", default=False
+    )
 
     return parser
 
@@ -57,6 +60,7 @@ if __name__ == "__main__":
         batch_size=batch_size,
         dataset_root=str(pathlib.Path("./data/spcup22").absolute()),
         transform=transforms,
+        should_include_unseen_in_training_data=args.include_unseen_data_in_training,
     )
     data_module.prepare_data()
     data_module.setup()
