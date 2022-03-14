@@ -1,12 +1,12 @@
 import pathlib
 import sys
 
-from datasets.SPCUP22DataModule import SPCUP22DataModule
-
 ROOT = pathlib.Path(__file__).absolute().parent.parent
 sys.path.append(str(ROOT))
 
 import unittest
+
+from datasets.SPCUP22DataModule import SPCUP22DataModule
 from features.audio import MFCC
 
 
@@ -35,7 +35,12 @@ class TestFeatures(unittest.TestCase):
         mfcc = MFCC(
             sr=sample_rate, n_mfcc=n_mfcc_expected, hop_length=hop_length
         )
-        mfcc_features, label = mfcc((sample, label,))
+        mfcc_features, label = mfcc(
+            (
+                sample,
+                label,
+            )
+        )
 
         num_samples, mfcc_count, num_features = mfcc_features.shape
         self.assertEqual(num_samples, 1)

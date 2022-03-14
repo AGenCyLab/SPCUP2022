@@ -7,6 +7,7 @@ ROOT = pathlib.Path(__file__).absolute().parent.parent
 sys.path.append(str(ROOT))
 
 import unittest
+
 from datasets.SPCUP22DataModule import SPCUP22DataModule
 from models.raw_audio import IncTSSDNetWrapper, ResTSSDNetWrapper
 

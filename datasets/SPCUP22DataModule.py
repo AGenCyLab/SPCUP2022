@@ -1,19 +1,19 @@
-from collections import defaultdict
 import pathlib
 import sys
 from typing import Optional
-import numpy as np
+
 import pandas as pd
 
 ROOT = str(pathlib.Path(__file__).parent.parent)
 sys.path.append(ROOT)
 
 import pytorch_lightning as pl
-from utils.config import load_config_file
-from datasets.SPCUP22Dataset import SPCUP22Dataset
-from torch.utils.data import Subset, DataLoader
-from utils.dataset import SPCUP22DatasetDownloader
 from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader, Subset
+from utils.config import load_config_file
+from utils.dataset import SPCUP22DatasetDownloader
+
+from datasets.SPCUP22Dataset import SPCUP22Dataset
 
 
 class SPCUP22DataModule(pl.LightningDataModule):

@@ -1,5 +1,5 @@
-import sys
 import pathlib
+import sys
 from typing import Tuple
 
 ROOT = str(pathlib.Path(__file__).parent.parent)
@@ -8,8 +8,8 @@ sys.path.append(ROOT)
 import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset
-from utils.audio import read_audio_file
 from torchvision.transforms import Compose
+from utils.audio import read_audio_file
 
 
 class SPCUP22Dataset(Dataset):
@@ -23,12 +23,12 @@ class SPCUP22Dataset(Dataset):
         """
         Args:
             annotations_df: the pandas.Dataframe of the annotations file
-            
+
             max_duration: max duation of the audio files to keep
-            
+
             mode: one of ["training", "eval"]
-            
-            transform: feature extractor or any other transformations to 
+
+            transform: feature extractor or any other transformations to
             apply on raw audio
         """
         if mode not in ("training", "eval"):
@@ -69,4 +69,3 @@ class SPCUP22Dataset(Dataset):
             return audio, label, filepath
 
         return audio, label
-
