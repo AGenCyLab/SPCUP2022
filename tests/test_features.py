@@ -1,10 +1,10 @@
 import pathlib
 import sys
 
-from datasets.SPCUP22DataModule import SPCUP22DataModule
-
 ROOT = pathlib.Path(__file__).absolute().parent.parent
 sys.path.append(str(ROOT))
+
+from datasets.SPCUP22DataModule import SPCUP22DataModule
 
 import unittest
 from features.audio import MFCC
