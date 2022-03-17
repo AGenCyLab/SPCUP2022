@@ -13,3 +13,12 @@ spcup22:
       link: https://www.dropbox.com/s/ftkyvwxgr9wl7jf/spcup_2022_eval_part1.zip?dl=1
       filename: spcup_2022_eval_part1.zip
       default_path: data/spcup22/training/part1/spcup_2022_eval_part1
+  mal_feature:
+     training:
+        link: https://www.dropbox.com/s/9nkc8eyu5lfendp/spcup_2022_training.zip?dl=1
+        filename: spcup_2022_training.zip
+        default_path: data/spcup22/mal_feature/training
+     evaluation_part1:
+        link: https://www.dropbox.com/s/d1kob8d11ynrv8m/spcup_2022_eval_part1_mel_features.zip?dl=1
+        filename: spcup_2022_eval_part1_mel_features.zip
+        default_path: data/spcup22/mal_feature/evaluation_part1
