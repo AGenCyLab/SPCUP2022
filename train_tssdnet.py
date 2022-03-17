@@ -3,7 +3,7 @@ import argparse
 import pathlib
 
 import torch
-from SPCUP2022.utils.config import load_config_file
+from utils.config import load_config_file
 from datasets.SPCUP22DataModule import SPCUP22DataModule
 from models.raw_audio import ResTSSDNetWrapper
 from models.raw_audio import IncTSSDNetWrapper
