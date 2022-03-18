@@ -27,6 +27,7 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
         should_load_eval_data: bool = False,
         val_pct: float = 0.1,
         test_pct: float = 0.2,
+        num_workers=0,
     ):
         super().__init__()
         self.batch_size = batch_size
@@ -42,6 +43,8 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
 
         self.val_pct = val_pct
         self.test_pct = test_pct
+
+        self.num_workers = num_workers
 
         self.train_data_path = self.dataset_root.joinpath(
             "mel_feature",
@@ -159,14 +162,14 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
             self.train_data,
             batch_size=self.batch_size,
             shuffle=True,
-            # num_workers=8,
+            num_workers=self.num_workers,
         )
 
     def val_dataloader(self):
         return DataLoader(
             self.val_data,
             batch_size=self.batch_size,
-            # num_workers=8,
+            num_workers=self.num_workers,
             shuffle=False,
         )
 
@@ -174,7 +177,7 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
         return DataLoader(
             self.test_data,
             batch_size=self.batch_size,
-            # num_workers=8,
+            num_workers=self.num_workers,
             shuffle=False,
         )
 
