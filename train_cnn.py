@@ -41,6 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
         CUDA_VISIBLE_DEVICES environment variable""",
     )
     parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--num-workers", type=int, default=1)
     parser.add_argument("--resume-from-checkpoint", type=str, default=None)
 
     train_or_eval = parser.add_mutually_exclusive_group()
@@ -68,6 +69,7 @@ if __name__ == "__main__":
         dataset_root=pathlib.Path("./data/spcup22").absolute(),
         config_file_path=args.dataset_config_file_path,
         should_load_eval_data=args.load_eval_data,
+        num_workers=args.num_workers,
     )
     data_module.prepare_data()
     data_module.setup()
