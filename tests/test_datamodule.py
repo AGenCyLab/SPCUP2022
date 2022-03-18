@@ -80,9 +80,10 @@ class TestDataModule(unittest.TestCase):
             len(datamodule.test_data.annotations_df), self.NUM_EVAL_DATA
         )
 
-        sample, label = datamodule.test_data.__getitem__(0)
+        sample, label, filepath = datamodule.test_data.__getitem__(0)
         self.assertEqual(sample.shape, (1, 96000))
-        self.assertEqual(label, None)
+        self.assertEqual(label, -1)
+        self.assertTrue(str(filepath).endswith(".wav"))
 
         datamodule.teardown()
 
