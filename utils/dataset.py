@@ -90,4 +90,4 @@ class SPCUP22DatasetDownloader:
         print("Unzipping [{}] ...".format(zip_file_path))
         with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
             zip_ref.extractall(extraction_dir)
-            os.remove(zip_file_path)
+        os.remove(zip_file_path)

@@ -5,7 +5,8 @@ import pathlib
 import torch
 from utils.config import load_config_file
 from datasets.SPCUP22MelDataModule import SPCUP22MelDataModule
-from models.simpleNet import SimpleNet
+from models.SimpleNet import SimpleNet
+from models.ResNet34 import ResNet34
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import (
     ModelCheckpoint,
@@ -21,8 +22,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--model-type",
         type=str,
-        choices=["simpleNet", "VGG16"],
-        default="simpleNet",
+        choices=["SimpleNet", "ResNet18", "ResNet34"],
+        default="SimpleNet",
     )
     parser.add_argument(
         "--dataset-config-file-path", default="config/mel_feature.yaml", type=str,
@@ -74,8 +75,24 @@ if __name__ == "__main__":
     data_module.prepare_data()
     data_module.setup()
 
-    if args.model_type == "simpleNet":
+    if args.model_type == "SimpleNet":
         classifier = SimpleNet(
+            num_classes=data_module.num_classes,
+            learning_rate = training_config["training"]["learning_rate"],
+            lr_scheduler_factor = training_config["training"]["lr_scheduler_factor"],
+            lr_scheduler_patience= training_config["training"]["lr_scheduler_patience"],
+        )
+    elif args.model_type == "ResNet34":
+        classifier = ResNet34(
+            [3, 4, 6, 3],
+            num_classes=data_module.num_classes,
+            learning_rate = training_config["training"]["learning_rate"],
+            lr_scheduler_factor = training_config["training"]["lr_scheduler_factor"],
+            lr_scheduler_patience= training_config["training"]["lr_scheduler_patience"],
+        )
+    elif args.model_type == "ResNet18":
+        classifier = ResNet34(
+            [2, 2, 2, 2],
             num_classes=data_module.num_classes,
             learning_rate = training_config["training"]["learning_rate"],
             lr_scheduler_factor = training_config["training"]["lr_scheduler_factor"],
