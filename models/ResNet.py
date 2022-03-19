@@ -155,7 +155,7 @@ class ResNet(pl.LightningModule):
                 "total": len(x),
                 }
     
-    def training_epoch_end(self, outputs):
+    def validation_epoch_end(self, outputs):
         val_loss = torch.Tensor([output["loss"] for output in outputs]).mean()
         correct = torch.Tensor([output["correct"] for output in outputs]).sum()
         total = torch.Tensor([output["total"] for output in outputs]).sum()
