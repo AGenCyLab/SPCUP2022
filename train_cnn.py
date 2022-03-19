@@ -6,7 +6,7 @@ import torch
 from utils.config import load_config_file
 from datasets.SPCUP22MelDataModule import SPCUP22MelDataModule
 from models.SimpleNet import SimpleNet
-from models.ResNet34 import ResNet34
+from models.ResNet import ResNet
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import (
     ModelCheckpoint,
@@ -83,7 +83,7 @@ if __name__ == "__main__":
             lr_scheduler_patience= training_config["training"]["lr_scheduler_patience"],
         )
     elif args.model_type == "ResNet34":
-        classifier = ResNet34(
+        classifier = ResNet(
             [3, 4, 6, 3],
             num_classes=data_module.num_classes,
             learning_rate = training_config["training"]["learning_rate"],
@@ -91,7 +91,7 @@ if __name__ == "__main__":
             lr_scheduler_patience= training_config["training"]["lr_scheduler_patience"],
         )
     elif args.model_type == "ResNet18":
-        classifier = ResNet34(
+        classifier = ResNet(
             [2, 2, 2, 2],
             num_classes=data_module.num_classes,
             learning_rate = training_config["training"]["learning_rate"],

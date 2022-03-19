@@ -47,16 +47,21 @@ class SimpleNet(pl.LightningModule):
         with torch.no_grad():
             x, y = batch
             logits = self(x.float())
-
+            correct_prediction = (torch.argmax(predict, 1) == y).sum()
             loss = F.cross_entropy(logits, y)
 
             return {
                 "loss": loss,
+                "correct": correct_prediction,
+                "total": len(x),
                 }
     
     def training_epoch_end(self, outputs):
         val_loss = torch.Tensor([output["loss"] for output in outputs]).mean()
+        correct = torch.Tensor([output["correct"] for output in outputs]).sum()
+        total = torch.Tensor([output["total"] for output in outputs]).sum()
         self.log("val_loss", val_loss, prog_bar=True)
+        self.log("val_acc", correct/total, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         with torch.no_grad():
