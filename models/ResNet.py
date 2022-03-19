@@ -146,7 +146,7 @@ class ResNet(pl.LightningModule):
         with torch.no_grad():
             x, y = batch
             logits = self(x.float())
-            correct_prediction = (torch.argmax(predict, 1) == y).sum()
+            correct_prediction = (torch.argmax(logits, 1) == y).sum()
             loss = F.cross_entropy(logits, y)
 
             return {
