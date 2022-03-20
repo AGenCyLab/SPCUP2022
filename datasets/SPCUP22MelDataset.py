@@ -16,11 +16,12 @@ class SPCUP22MelDataset(Dataset):
         self.mode = mode
 
     def __len__(self):
-        return len(self.images)
+        return len(self.annotations_df)
 
     def __getitem__(self, index):
-        target=-1
+        
         if self.mode=="eval":
+            target=str(self.annotations_df.iloc[index,1]).split("\\")[-1]
             image_path = self.annotations_df.iloc[index,1].replace("wav", "jpg")
         else:
             target = self.annotations_df.iloc[index,1]

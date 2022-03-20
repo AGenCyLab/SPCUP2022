@@ -143,7 +143,7 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
                 eval_df,
                 mode="eval",
             )
-            self.num_test_samples = self.test_data.num_samples
+            self.num_test_samples = len(self.test_data)
             return
 
         train_df = self.get_annotation_df(self.train_data_path)
