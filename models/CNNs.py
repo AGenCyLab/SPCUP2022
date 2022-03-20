@@ -9,7 +9,7 @@ class CNNs(pl.LightningModule):
     def __init__(
         self,
         network="VGG16",
-        num_classes = 5,
+        num_classes = 6,
         learning_rate = 1e-5,
         lr_scheduler_factor = 0.5,
         lr_scheduler_patience=5,
@@ -48,7 +48,7 @@ class CNNs(pl.LightningModule):
             raise Exception(f"Use one of the followings {networks}")
         
         self.learning_rate = learning_rate
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=self.learning_rate, momentum=.9)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         self.lr_scheduler =  torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, factor=lr_scheduler_factor, patience=lr_scheduler_patience, verbose=True)
 
     def forward(self, x):
@@ -69,11 +69,9 @@ class CNNs(pl.LightningModule):
     
     def training_epoch_end(self, outputs):
         train_loss = torch.Tensor([output["loss"] for output in outputs]).mean()
-        self.log("train_loss", train_loss, prog_bar=True)
-        train_loss = torch.Tensor([output["loss"] for output in outputs]).mean()
         correct = torch.Tensor([output["correct"] for output in outputs]).sum()
         total = torch.Tensor([output["total"] for output in outputs]).sum()
-        self.log("train_loss", val_loss, prog_bar=True)
+        self.log("train_loss", train_loss, prog_bar=True)
         self.log("train_acc", correct/total, prog_bar=True)
 
     def validation_step(self, batch, batch_idx):

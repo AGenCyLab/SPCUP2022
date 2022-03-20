@@ -85,16 +85,9 @@ if __name__ == "__main__":
         gpus=torch.cuda.device_count(),
     )
 
-    if not args.load_eval_data:
-        # For training on 6000 train samples which are split into 3 datasets (train, eval, test)
-        trainer.fit(
-        classifier,
-        datamodule=data_module
-        )
-    else:
-        # For testing 9000 validation samples
-        trainer.test(
-            classifier,
-            datamodule=data_module
-            )
+    # Training on 6000 train samples which are splited into 3 datasets (train, eval, test)
+    trainer.fit(
+    classifier,
+    datamodule=data_module,
+    )
 
