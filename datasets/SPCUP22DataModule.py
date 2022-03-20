@@ -20,7 +20,6 @@ class SPCUP22DataModule(pl.LightningDataModule):
     def __init__(
         self,
         batch_size: int,
-        data_type: str = "raw_audio",
         dataset_root: str = None,
         config_file_path: str = "config/dataset.yaml",
         dataset_name: str = "spcup22",
@@ -31,11 +30,6 @@ class SPCUP22DataModule(pl.LightningDataModule):
         test_pct: float = 0.2,
         transform=None,
     ):
-        """
-        data_type is one of ("raw_audio", "mel_features", ...) and any other
-        type of precomputed data that we might want to use. The dataset.yaml
-        file should be updated accordingly with the proper key.
-        """
         super().__init__()
         self.batch_size = batch_size
         self.config_file_path = pathlib.Path(ROOT).joinpath(config_file_path)
@@ -45,7 +39,6 @@ class SPCUP22DataModule(pl.LightningDataModule):
         ]
         self.dataset_root = pathlib.Path(dataset_root)
         self.transform = transform
-        self.data_type = data_type
 
         self.should_include_unseen_in_training_data = (
             should_include_unseen_in_training_data
@@ -57,16 +50,13 @@ class SPCUP22DataModule(pl.LightningDataModule):
         self.test_pct = test_pct
 
         self.train_data_part1_path = self.dataset_root.joinpath(
-            self.data_type, "training", "part1", "spcup_2022_training_part1"
+            "training", "part1", "spcup_2022_training_part1"
         )
         self.train_data_part2_path = self.dataset_root.joinpath(
-            self.data_type, "training", "part2", "spcup_2022_unseen"
+            "training", "part2", "spcup_2022_unseen"
         )
         self.evaluation_data_part1_path = self.dataset_root.joinpath(
-            self.data_type, "evaluation", "part1", "spcup_2022_eval_part1"
-        )
-        self.evaluation_data_part2_path = self.dataset_root.joinpath(
-            self.data_type, "evaluation", "part2", "spcup_2022_eval_part2"
+            "evaluation", "part1", "spcup_2022_eval_part1"
         )
 
     @property
@@ -83,9 +73,7 @@ class SPCUP22DataModule(pl.LightningDataModule):
 
     def prepare_data(self) -> None:
         downloader = SPCUP22DatasetDownloader(
-            self.config_file_path,
-            dataset_name=self.dataset_name,
-            data_type=self.data_type,
+            self.config_file_path, dataset_name=self.dataset_name
         )
         downloader.download_datasets()
 
