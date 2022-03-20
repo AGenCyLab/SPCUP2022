@@ -66,7 +66,7 @@ if __name__ == "__main__":
     data_module.setup()
 
     classifier = CNNs(
-        network=args.model_type
+        network=args.model_type,
         num_classes=5,
         learning_rate = training_config["training"]["learning_rate"],
         lr_scheduler_factor = training_config["training"]["lr_scheduler_factor"],
