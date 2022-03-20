@@ -3,6 +3,35 @@ import os
 import zipfile
 import requests
 import pathlib
+import math
+from tqdm import tqdm
+
+
+def download_file(
+    link: str, download_folder_root: pathlib.Path, filename: str
+):
+    """
+    A function for downloading files from links with progress bar
+    """
+    data_file_path = download_folder_root.joinpath(filename)
+
+    response = requests.get(link, stream=True)
+    total_size = int(response.headers.get("content-length", 0))
+    chunk_size = 1024
+    wrote = 0
+
+    data_file = open(data_file_path, "wb")
+
+    for chunk in tqdm(
+        response.iter_content(chunk_size=chunk_size),
+        total=math.ceil(total_size // chunk_size),
+        unit="KB",
+        unit_scale=True,
+    ):
+        wrote = wrote + len(chunk)
+        data_file.write(chunk)
+
+    data_file.close()
 
 
 class SPCUP22DatasetDownloader:
@@ -88,17 +117,7 @@ class SPCUP22DatasetDownloader:
 
                 if not zip_file_path.exists() and not extraction_dir.exists():
                     print("Downloading [{}]...".format(link))
-
-                    response = requests.get(link, stream=True)
-                    data_file_path = self.download_folder_root.joinpath(
-                        filename
-                    )
-
-                    data_file = open(data_file_path, "wb")
-                    for chunk in response.iter_content(chunk_size=1024):
-                        data_file.write(chunk)
-                    data_file.close()
-
+                    download_file(link, self.download_folder_root, filename)
                     self.unzip_file(zip_file_path, extraction_dir)
                 else:
                     print("Skipping downloading [{}]...".format(zip_file_path))
