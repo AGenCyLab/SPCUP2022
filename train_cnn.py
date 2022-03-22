@@ -81,13 +81,27 @@ if __name__ == "__main__":
         lr_scheduler_patience= training_config["training"]["lr_scheduler_patience"],
     )
 
+    cbs = [
+        ModelCheckpoint(
+        dirpath=args.checkpoint_path,
+        every_n_epochs=training_config["training"][
+            "save_checkpoint_epoch_interval"
+        ],
+        monitor="val_loss",
+        save_last=True,
+    ),
+    ]
+
     trainer = pl.Trainer(
         gpus=torch.cuda.device_count(),
+        max_epochs=args.epochs,
+        callbacks=cbs,
     )
 
     # Training on 6000 train samples which are splited into 3 datasets (train, eval, test)
     trainer.fit(
     classifier,
     datamodule=data_module,
+    ckpt_path=args.resume_from_checkpoint,
     )
 
