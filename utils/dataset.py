@@ -69,6 +69,7 @@ class SPCUP22DatasetDownloader:
         dataset_name: str = "spcup22",
         unzip_after_download: bool = True,
         data_type: str = "raw_audio",
+        remove_zip_after_extraction: bool = False,
     ) -> None:
         """
         config_file_path: str
@@ -86,6 +87,7 @@ class SPCUP22DatasetDownloader:
         self.root = pathlib.Path(__file__).parent.parent
         self.config_file_path = config_file_path
         self.dataset_name = dataset_name
+        self.remove_zip_after_extraction = remove_zip_after_extraction
 
         with open(self.config_file_path, mode="r") as yaml_file_object:
             self.config = yaml.load(yaml_file_object, Loader=yaml.FullLoader)[
@@ -109,17 +111,32 @@ class SPCUP22DatasetDownloader:
             for part_name, part_values in dataset_link_data.items():
                 link = part_values["link"]
                 filename = part_values["filename"]
+                default_path = part_values["default_path"]
 
                 zip_file_path = self.download_folder_root.joinpath(filename)
                 extraction_dir = self.download_folder_root.joinpath(
-                    dataset_type, part_name
+                    default_path
                 )
 
-                if not zip_file_path.exists() and not extraction_dir.exists():
-                    print("Downloading [{}]...".format(link))
-                    download_file(link, self.download_folder_root, filename)
-                    self.unzip_file(zip_file_path, extraction_dir)
+                if zip_file_path.exists():
+                    if not extraction_dir.exists():
+                        print("Extracting [{}]...".format(zip_file_path))
+                        self.unzip_file(zip_file_path, extraction_dir)
+                    else:
+                        print(
+                            "Skipping downloading [{}]...".format(
+                                zip_file_path
+                            )
+                        )
                 else:
+                    if not extraction_dir.exists():
+                        print("Downloading [{}]...".format(link))
+                        download_file(
+                            link, self.download_folder_root, filename
+                        )
+                        print("Extracting [{}]...".format(zip_file_path))
+                        self.unzip_file(zip_file_path, extraction_dir)
+
                     print("Skipping downloading [{}]...".format(zip_file_path))
 
     def unzip_file(self, zip_file_path: str, extraction_dir: str):
@@ -130,4 +147,5 @@ class SPCUP22DatasetDownloader:
         with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
             zip_ref.extractall(extraction_dir)
 
-        os.remove(zip_file_path)
+        if self.remove_zip_after_extraction:
+            os.remove(zip_file_path)
