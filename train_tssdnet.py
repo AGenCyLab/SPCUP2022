@@ -43,6 +43,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--epochs", type=int, required=True)
     parser.add_argument("--resume-from-checkpoint", type=str, default=None)
+    parser.add_argument(
+        "--include-augmented-data", action="store_true", default=False
+    )
 
     train_or_eval = parser.add_mutually_exclusive_group()
     train_or_eval.add_argument(
@@ -66,13 +69,17 @@ if __name__ == "__main__":
 
     data_module = SPCUP22DataModule(
         training_config["training"]["batch_size"],
-        dataset_root=pathlib.Path("./data/spcup22").absolute(),
+        dataset_root=pathlib.Path("./data/raw_audio/spcup22").absolute(),
         config_file_path=args.dataset_config_file_path,
+        should_include_augmented_data=args.include_augmented_data,
         should_include_unseen_in_training_data=args.include_unseen_in_training_data,
         should_load_eval_data=args.load_eval_data,
     )
     data_module.prepare_data()
     data_module.setup()
+
+    print("Number of classes:", data_module.num_classes)
+    print("Number of samples:", len(data_module.data.annotations_df))
 
     if args.model_type == "res-tssdnet":
         classifier = ResTSSDNetWrapper(
