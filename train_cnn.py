@@ -14,6 +14,7 @@ from pytorch_lightning.callbacks import (
 )
 from pytorch_lightning.loggers import WandbLogger
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6,7"
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -22,7 +23,6 @@ def build_parser() -> argparse.ArgumentParser:
         "--model-type",
         type=str,
         choices=["VGG16", "ResNet18", "ResNet34"],
-        default="VGG16",
     )
     parser.add_argument(
         "--dataset-config-file-path", default="config/mel_feature.yaml", type=str,
@@ -44,12 +44,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--resume-from-checkpoint", type=str, default=None)
 
-    train_or_eval = parser.add_mutually_exclusive_group()
-    train_or_eval.add_argument(
-        "--include-unseen-in-training-data", action="store_true", default=False
-    )
-    train_or_eval.add_argument(
-        "--load-eval-data", action="store_true", default=False
+    parser.add_argument(
+        "--load-eval-data", default=0, type=int,
     )
 
     return parser
@@ -88,12 +84,16 @@ if __name__ == "__main__":
             "save_checkpoint_epoch_interval"
         ],
         monitor="val_loss",
+        filename=f"{args.model_type}-{{epoch}}-{{val_acc:.2f}}-{{val_loss:.2f}}",
         save_last=True,
     ),
     ]
+    
 
     trainer = pl.Trainer(
-        gpus=torch.cuda.device_count(),
+        gpus=args.gpu_indices,
+        sync_batchnorm=True,
+        strategy="ddp",
         max_epochs=args.epochs,
         callbacks=cbs,
     )
@@ -105,3 +105,8 @@ if __name__ == "__main__":
     ckpt_path=args.resume_from_checkpoint,
     )
 
+    trainer.test(
+    classifier,
+    data_module,
+    ckpt_path=args.resume_from_checkpoint,
+    )

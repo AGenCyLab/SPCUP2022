@@ -21,8 +21,9 @@ class SPCUP22MelDataset(Dataset):
     def __getitem__(self, index):
         
         if self.mode=="eval":
-            target=str(self.annotations_df.iloc[index,1]).split("\\")[-1]
-            image_path = self.annotations_df.iloc[index,1].replace("wav", "jpg")
+            target=-1
+            path_as_label = self.annotations_df.iloc[index,1]
+            image_path = path_as_label.replace("wav", "jpg")
         else:
             target = self.annotations_df.iloc[index,1]
             image_path = self.annotations_df.iloc[index,0].replace("wav", "jpg")
@@ -39,5 +40,8 @@ class SPCUP22MelDataset(Dataset):
         )
 
         image = transforms(image=image)["image"]
+        
+        if self.mode=="eval":
+            return image, target, path_as_label
 
         return image, target

@@ -22,12 +22,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--model-type",
         type=str,
         choices=["VGG16", "ResNet18", "ResNet34"],
-        default="VGG16",
     )
     parser.add_argument(
         "--dataset-config-file-path", default="config/mel_feature.yaml", type=str,
     )
-
     parser.add_argument(
         "--training-config-file-path",
         default="config/train_params.yaml",
@@ -41,6 +39,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=str,
         default="./submissions",
         help="""The path in which the submission text file will be placed""",
+    )
+    parser.add_argument(
+        "--load-eval-data",
+        type=int,
+        default=0,
+        
     )
 
     return parser
@@ -59,29 +63,41 @@ if __name__ == "__main__":
         training_config["training"]["batch_size"],
         dataset_root=pathlib.Path("./data/spcup22").absolute(),
         config_file_path=args.dataset_config_file_path,
-        should_load_eval_data=True,
+        should_load_eval_data=args.load_eval_data,
         num_workers=0,
     )
     data_module.prepare_data()
     data_module.setup()
-
+    
     classifier = CNNs(
-        network=args.model_type,
-        num_classes=5,
+        args.model_type,
         learning_rate = training_config["training"]["learning_rate"],
         lr_scheduler_factor = training_config["training"]["lr_scheduler_factor"],
         lr_scheduler_patience= training_config["training"]["lr_scheduler_patience"],
+    ).load_from_checkpoint(
+        args.model_checkpoint_path,
+    )
+    
+    if classifier is None:
+        raise Exception("Invalid model_type '{}'".format(args.model_type))
+    
+    feature_name = "mel_spectrogram"
+    model_name = args.model_type.replace("-", "_")
+    feature_name = ""
+    current_timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
+
+    submission_path = pathlib.Path(args.submission_path).joinpath(
+        "{}-{}-{}".format(model_name, feature_name, current_timestamp)
+    )
+    os.makedirs(submission_path, exist_ok=True)
+
+    (
+        actual_labels,
+        flattened_predictions,
+        flattened_probabilities,
+        filepaths,
+    ) = pytorch_lightning_make_predictions(
+        classifier, data_module, mode="eval"
     )
 
-    classifier.test()
-
-
-    trainer = Trainer(
-        gpus=torch.cuda.device_count(),
-    )
-
-    trainer.test(
-        classifier,
-        data_module,
-        ckpt_path=args.model_checkpoint_path,
-    )
+    write_answers(submission_path, flattened_predictions, filepaths)

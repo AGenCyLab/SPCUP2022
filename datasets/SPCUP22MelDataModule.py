@@ -24,7 +24,7 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
         config_file_path: str = "config/dataset.yaml",
         dataset_name: str = "spcup22",
         annotations_file_name: str = "labels.csv",
-        should_load_eval_data: bool = False,
+        should_load_eval_data: int = 0,
         val_pct: float = 0.1,
         test_pct: float = 0.2,
         num_workers=0,
@@ -54,10 +54,10 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
             "mel_feature",
             "evaluation_part1",
         )
-        # self.evaluation_data_part2_path = self.dataset_root.joinpath(
-        #     "mel_feature",
-        #     "evaluation_part2",
-        # )
+        self.evaluation_data_part2_path = self.dataset_root.joinpath(
+            "mel_feature",
+            "evaluation_part2",
+        )
 
     @property
     def annotation_csv_filename(self):
@@ -137,8 +137,16 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
 
     def setup(self, stage: Optional[str] = None) -> None:
         # evaluation mode, no training will be done
-        if self.should_load_eval_data:
+        if self.should_load_eval_data == 1:
             eval_df = self.get_annotation_df(self.evaluation_data_part1_path)
+            self.test_data = SPCUP22MelDataset(
+                eval_df,
+                mode="eval",
+            )
+            self.num_test_samples = len(self.test_data)
+            return
+        if self.should_load_eval_data == 2:
+            eval_df = self.get_annotation_df(self.evaluation_data_part2_path)
             self.test_data = SPCUP22MelDataset(
                 eval_df,
                 mode="eval",

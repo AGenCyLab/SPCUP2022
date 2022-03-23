@@ -8,3 +8,8 @@ spcup22:
          link: https://www.dropbox.com/s/d1kob8d11ynrv8m/spcup_2022_eval_part1_mel_features.zip?dl=1
          filename: spcup_2022_eval_part1_mel_features.zip
          default_path: data/spcup22/mal_feature/evaluation_part1
+      evaluation_part1:
+         link: https://www.dropbox.com/s/24qr0gvwwmfj0rd/spcup_2022_eval_part2_mel_features.zip?dl=1
+         filename: spcup_2022_eval_part2_mel_features.zip
+         default_path: data/spcup22/mal_feature/evaluation_part2
+         
