@@ -47,6 +47,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--load-eval-data", default=0, type=int,
     )
+    parser.add_argument(
+        "--load-augmented-data", default=False, type=bool,
+    )
 
     return parser
 
@@ -65,6 +68,7 @@ if __name__ == "__main__":
         dataset_root=pathlib.Path("./data/spcup22").absolute(),
         config_file_path=args.dataset_config_file_path,
         should_load_eval_data=args.load_eval_data,
+        should_include_augmented_data=args.load_augmented_data,
         num_workers=args.num_workers,
     )
     data_module.prepare_data()

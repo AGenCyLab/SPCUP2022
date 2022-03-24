@@ -97,7 +97,7 @@ class _ResNet(pl.LightningModule):
 class CNNs(pl.LightningModule):
     def __init__(
         self,
-        network,
+        network="ResNet34",
         num_classes = 6,
         learning_rate = 1e-5,
         lr_scheduler_factor = 0.1,
@@ -106,8 +106,10 @@ class CNNs(pl.LightningModule):
         super(CNNs,self).__init__()
 
         networks = ["VGG16", "ResNet34", "ResNet18"]
-
-        if network=="VGG16":
+        
+        self.network = network
+        
+        if self.network=="VGG16":
             self.net = models.vgg16_bn()
 
             for p in self.net.parameters():
@@ -116,10 +118,10 @@ class CNNs(pl.LightningModule):
             self.net.features[0] = nn.Conv2d(in_channels=1, out_channels=64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
             self.net.classifier[6] = nn.Linear(in_features=4096, out_features=num_classes, bias=True)
 
-        elif network=="ResNet34":
+        elif self.network=="ResNet34":
             self.net = _ResNet([3, 4, 6, 3])
 
-        elif network=="ResNet18":
+        elif self.network=="ResNet18":
             self.net = _ResNet([2, 2, 2, 2])
             
         else:

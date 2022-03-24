@@ -71,9 +71,10 @@ if __name__ == "__main__":
     
     classifier = CNNs(
         args.model_type,
-        learning_rate = training_config["training"]["learning_rate"],
-        lr_scheduler_factor = training_config["training"]["lr_scheduler_factor"],
-        lr_scheduler_patience= training_config["training"]["lr_scheduler_patience"],
+        num_classes=6,
+        learning_rate=training_config["training"]["learning_rate"],
+        lr_scheduler_factor=training_config["training"]["lr_scheduler_factor"],
+        lr_scheduler_patience=training_config["training"]["lr_scheduler_patience"],
     ).load_from_checkpoint(
         args.model_checkpoint_path,
     )
