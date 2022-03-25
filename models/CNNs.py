@@ -199,7 +199,7 @@ class CNNs(pl.LightningModule):
     
     def predict_step(self, batch, batch_idx):
         with torch.no_grad():
-            inputs, filepaths = batch
+            inputs, _, filepaths = batch
             logits = self.forward(inputs.float())
             return logits, filepaths
 

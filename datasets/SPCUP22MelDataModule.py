@@ -24,7 +24,7 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
         config_file_path: str = "config/dataset.yaml",
         dataset_name: str = "spcup22",
         annotations_file_name: str = "labels.csv",
-        should_load_eval_data: int = 0,
+        should_load_eval_data: int = 0, # 0 = load train data, 1 = load eval part 1 data, 2 = load eval part 2 
         should_include_augmented_data: bool = False,
         val_pct: float = 0.1,
         test_pct: float = 0.2,
