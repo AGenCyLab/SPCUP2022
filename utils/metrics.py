@@ -34,7 +34,7 @@ def pytorch_lightning_make_predictions(
         actual labels.
     """
     checkpoint.eval()
-    trainer = pl.Trainer()#gpus=torch.cuda.device_count(), accelerator="ddp")
+    trainer = pl.Trainer(gpus=torch.cuda.device_count(), accelerator="ddp")
     predictions = trainer.predict(checkpoint, datamodule=data_module)
 
     filepaths = []
