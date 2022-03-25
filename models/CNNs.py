@@ -153,6 +153,7 @@ class CNNs(pl.LightningModule):
         total = torch.Tensor([output["total"] for output in outputs]).sum()
         self.log("train_loss", train_loss, prog_bar=True)
         self.log("train_acc", correct/total, prog_bar=True)
+        self.log("lr", self.optimizer.param_groups[0]['lr'], prog_bar=True)
 
     def validation_step(self, batch, batch_idx):
         with torch.no_grad():
