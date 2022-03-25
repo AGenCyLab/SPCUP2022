@@ -24,10 +24,10 @@ svm:
 
 cnn:
   training:
-    batch_size: 128
+    batch_size: 64
     learning_rate: 1.0e-3
     lr_scheduler_factor: 0.1
-    lr_scheduler_patience: 20
+    lr_scheduler_patience: 10
     save_checkpoint_epoch_interval: 5
     check_val_every_n_epoch: 1
 

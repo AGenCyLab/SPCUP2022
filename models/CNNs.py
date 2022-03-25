@@ -97,7 +97,7 @@ class _ResNet(pl.LightningModule):
 class CNNs(pl.LightningModule):
     def __init__(
         self,
-        network="ResNet34",
+        network="",
         num_classes = 6,
         learning_rate = 1e-5,
         lr_scheduler_factor = 0.1,
@@ -198,7 +198,7 @@ class CNNs(pl.LightningModule):
     
     def predict_step(self, batch, batch_idx):
         with torch.no_grad():
-            inputs, _, filepaths = batch
+            inputs, filepaths = batch
             logits = self.forward(inputs.float())
             return logits, filepaths
 

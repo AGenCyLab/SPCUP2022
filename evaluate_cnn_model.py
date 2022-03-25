@@ -69,14 +69,17 @@ if __name__ == "__main__":
     data_module.prepare_data()
     data_module.setup()
     
-    classifier = CNNs(
-        args.model_type,
-        num_classes=6,
-        learning_rate=training_config["training"]["learning_rate"],
-        lr_scheduler_factor=training_config["training"]["lr_scheduler_factor"],
-        lr_scheduler_patience=training_config["training"]["lr_scheduler_patience"],
-    ).load_from_checkpoint(
+    hparams = {
+        "network": args.model_type,
+        "num_classes"=6,
+        "learning_rate"=training_config["training"]["learning_rate"],
+        "lr_scheduler_factor"=training_config["training"]["lr_scheduler_factor"],
+        "lr_scheduler_patience"=training_config["training"]["lr_scheduler_patience"],
+    }
+
+    classifier = CNNs.load_from_checkpoint(
         args.model_checkpoint_path,
+        **hparams,
     )
     
     if classifier is None:
