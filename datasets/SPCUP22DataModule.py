@@ -180,6 +180,10 @@ class SPCUP22DataModule(pl.LightningDataModule):
             random_state=42,
         )
 
+        self.num_train_samples = len(train_indices)
+        self.num_val_samples = len(val_indices)
+        self.num_test_samples = len(test_indices)
+
         # construct subsets with the indices
         train_data = Subset(data, train_indices)
         val_data = Subset(data, val_indices)
