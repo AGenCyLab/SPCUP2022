@@ -1,12 +1,64 @@
 from typing import Callable, Union, List
 import pathlib
 from zipfile import ZipFile
+import numpy as np
 from sklearn.metrics import accuracy_score, f1_score
 import scikitplot as skplt
 import matplotlib.pyplot as plt
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
+from tqdm import tqdm
+
+
+def sklearn_make_predictions(
+    classifier,
+    data_module: pl.LightningDataModule,
+    batch_size: int,
+    mode: str = "training",
+):
+    """
+    Same as pytorch_lightning_make_predictions() but for sklearn based models
+    """
+    test_dataloader = data_module.test_dataloader()
+
+    actual_labels = []
+    predicted_labels = []
+    predicted_probabilities = []
+    filepaths = []
+
+    for batch in tqdm(test_dataloader):
+        samples, current_actual_labels, current_filepaths = batch
+
+        if isinstance(current_actual_labels, torch.Tensor):
+            current_actual_labels = current_actual_labels.tolist()
+
+        if isinstance(current_filepaths, torch.Tensor):
+            current_filepaths = current_filepaths.tolist()
+
+        filepaths.extend(current_filepaths)
+
+        if mode == "training":
+            actual_labels.extend(current_actual_labels)
+
+        samples = np.reshape(samples, newshape=(batch_size, -1))
+
+        current_predicted_probabilities = classifier.predict_proba(samples)
+        current_predicted_labels = np.argmax(
+            current_predicted_probabilities, axis=1
+        )
+
+        predicted_probabilities.extend(
+            current_predicted_probabilities.tolist()
+        )
+        predicted_labels.extend(current_predicted_labels.tolist())
+
+    return (
+        actual_labels,
+        predicted_labels,
+        predicted_probabilities,
+        filepaths,
+    )
 
 
 def pytorch_lightning_make_predictions(
