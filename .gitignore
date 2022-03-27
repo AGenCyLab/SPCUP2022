@@ -136,3 +136,4 @@ wandb
 results
 submissions
 *.asv
+*.pyc

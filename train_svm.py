@@ -21,6 +21,9 @@ def build_parser() -> ArgumentParser:
     parser.add_argument(
         "--include-unseen-data-in-training", action="store_true", default=False
     )
+    parser.add_argument(
+        "--include-augmented-data", action="store_true", default=False
+    )
 
     return parser
 
@@ -58,9 +61,10 @@ if __name__ == "__main__":
     # datamodule
     data_module = SPCUP22DataModule(
         batch_size=batch_size,
-        dataset_root=str(pathlib.Path("./data/spcup22").absolute()),
+        dataset_root=str(pathlib.Path("./data/raw_audio/spcup22").absolute()),
         transform=transforms,
         should_include_unseen_in_training_data=args.include_unseen_data_in_training,
+        should_include_augmented_data=args.include_augmented_data,
     )
     data_module.prepare_data()
     data_module.setup()
@@ -80,7 +84,7 @@ if __name__ == "__main__":
         val_data = data_module.val_dataloader()
 
         for batch in train_data:
-            samples, labels = batch
+            samples, labels, _ = batch
             samples = np.reshape(samples, newshape=(batch_size, -1))
             classifier.partial_fit(samples, labels, classes=classes)
 
@@ -88,7 +92,7 @@ if __name__ == "__main__":
         num_val_batches = 0
 
         for batch in val_data:
-            samples, labels = batch
+            samples, labels, _ = batch
             samples = np.reshape(samples, newshape=(batch_size, -1))
             accuracy = classifier.score(samples, labels)
 
