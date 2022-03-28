@@ -24,8 +24,9 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
         config_file_path: str = "config/dataset.yaml",
         dataset_name: str = "spcup22",
         annotations_file_name: str = "labels.csv",
-        should_load_eval_data: int = 0, # 0 = load train data, 1 = load eval part 1 data, 2 = load eval part 2 
+        should_load_eval_data: int = 0,  # 0 = load train data, 1 = load eval part 1 data, 2 = load eval part 2
         should_include_augmented_data: bool = False,
+        data_type: str = "mel_feature",
         val_pct: float = 0.1,
         test_pct: float = 0.2,
         num_workers=0,
@@ -38,6 +39,7 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
             self.dataset_name
         ]
         self.dataset_root = pathlib.Path(dataset_root)
+        self.data_type = data_type
 
         self.should_load_eval_data = should_load_eval_data
         self.should_include_augmented_data = should_include_augmented_data
@@ -49,19 +51,15 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
 
         self.train_data_path = self.dataset_root.joinpath(
-            "mel_feature",
             "training",
         )
         self.train_augmented_data_path = self.dataset_root.joinpath(
-            "mel_feature",
             "training_augmented",
         )
         self.evaluation_data_part1_path = self.dataset_root.joinpath(
-            "mel_feature",
             "evaluation_part1",
         )
         self.evaluation_data_part2_path = self.dataset_root.joinpath(
-            "mel_feature",
             "evaluation_part2",
         )
 
@@ -79,7 +77,9 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
 
     def prepare_data(self) -> None:
         downloader = SPCUP22DatasetDownloader(
-            self.config_file_path, dataset_name=self.dataset_name
+            self.config_file_path,
+            dataset_name=self.dataset_name,
+            data_type=self.data_type,
         )
         downloader.download_datasets()
 
@@ -140,7 +140,7 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
         test_data = Subset(data, test_indices)
 
         return train_data, val_data, test_data
-    
+
     def combine_dataframes_vertically(self, dfs):
         """
         Used to combine the dataframes. Useful for concatenating unseen data
@@ -177,13 +177,17 @@ class SPCUP22MelDataModule(pl.LightningDataModule):
             return
 
         train_df = self.get_annotation_df(self.train_data_path)
-        
+
         if self.should_include_augmented_data:
-            train_augmented_df = self.get_annotation_df(self.train_augmented_data_path)
-            train_df = self.combine_dataframes_vertically([train_df, train_augmented_df])
-        
+            train_augmented_df = self.get_annotation_df(
+                self.train_augmented_data_path
+            )
+            train_df = self.combine_dataframes_vertically(
+                [train_df, train_augmented_df]
+            )
+
         self.data = SPCUP22MelDataset(train_df)
-        
+
         self.num_classes = len(self.data.annotations_df.iloc[:, 1].unique())
 
         (

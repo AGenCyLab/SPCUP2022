@@ -125,7 +125,7 @@ class SPCUP22DatasetDownloader:
             ]
 
         self.download_folder_root = pathlib.Path(self.root).joinpath(
-            "data", self.dataset_name
+            "data", data_type, self.dataset_name
         )
 
         if not self.download_folder_root.exists():

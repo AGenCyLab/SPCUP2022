@@ -10,8 +10,9 @@ import torchvision
 
 RESIZE = 224
 
+
 class SPCUP22MelDataset(Dataset):
-    def __init__(self, annotations_df, *,mode="train"):
+    def __init__(self, annotations_df, *, mode="train"):
         self.annotations_df = annotations_df
         self.mode = mode
 
@@ -19,29 +20,29 @@ class SPCUP22MelDataset(Dataset):
         return len(self.annotations_df)
 
     def __getitem__(self, index):
-        
-        if self.mode=="eval":
-            target=-1
-            path_as_label = self.annotations_df.iloc[index,1]
+        target = -1
+
+        if self.mode == "eval":
+            path_as_label = self.annotations_df.iloc[index, 1]
             image_path = path_as_label.replace("wav", "jpg")
         else:
-            target = self.annotations_df.iloc[index,1]
-            image_path = self.annotations_df.iloc[index,0].replace("wav", "jpg")
+            target = self.annotations_df.iloc[index, 1]
+            image_path = self.annotations_df.iloc[index, 0].replace(
+                "wav", "jpg"
+            )
 
         image_bytes = Image.open(image_path).convert("L")
         w, h = image_bytes.size
 
         image = np.array(image_bytes)
 
-        transforms = A.Compose([
-            A.Resize(height=RESIZE,width=RESIZE),
-            ToTensorV2(),
-        ],
+        transforms = A.Compose(
+            [
+                A.Resize(height=RESIZE, width=RESIZE),
+                ToTensorV2(),
+            ],
         )
 
         image = transforms(image=image)["image"]
-        
-        if self.mode=="eval":
-            return image, target, path_as_label
 
-        return image, target
+        return image, target, image_path
