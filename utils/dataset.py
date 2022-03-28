@@ -122,10 +122,10 @@ class SPCUP22DatasetDownloader:
         with open(self.config_file_path, mode="r") as yaml_file_object:
             self.config = yaml.load(yaml_file_object, Loader=yaml.FullLoader)[
                 dataset_name
-            ][data_type]
+            ]
 
         self.download_folder_root = pathlib.Path(self.root).joinpath(
-            "data", data_type, self.dataset_name
+            "data", self.dataset_name
         )
 
         if not self.download_folder_root.exists():
