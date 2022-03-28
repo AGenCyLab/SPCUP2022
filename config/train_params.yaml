@@ -22,3 +22,11 @@ svm:
   training:
     batch_size: 240
     epochs: 200
+
+gmm:
+  features:
+    n_mfcc: 40
+    hop_length: 256
+  training:
+    batch_size: 240
+    epochs: 200

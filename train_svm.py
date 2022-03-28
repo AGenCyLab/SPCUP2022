@@ -85,6 +85,9 @@ if __name__ == "__main__":
 
         for batch in train_data:
             samples, labels, _ = batch
+            samples = samples.detach().numpy()
+            labels = labels.detach().numpy()
+
             samples = np.reshape(samples, newshape=(batch_size, -1))
             classifier.partial_fit(samples, labels, classes=classes)
 
@@ -93,6 +96,9 @@ if __name__ == "__main__":
 
         for batch in val_data:
             samples, labels, _ = batch
+            samples = samples.detach().numpy()
+            labels = labels.detach().numpy()
+
             samples = np.reshape(samples, newshape=(batch_size, -1))
             accuracy = classifier.score(samples, labels)
 

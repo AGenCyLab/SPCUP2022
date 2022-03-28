@@ -1,3 +1,4 @@
+import numpy as np
 import yaml
 import os
 import zipfile
@@ -5,6 +6,35 @@ import requests
 import pathlib
 import math
 from tqdm import tqdm
+from torch.utils.data import DataLoader
+
+
+def get_numpy_dataset_from_dataloader(
+    dataloader: DataLoader, batch_size: int, return_true_labels: bool = False
+):
+    """
+    Util function for training GMM/other models that requires flattened data.
+
+    Loads the SPCUP data to memory from dataloader. Returns an ndarray of shape
+    (num_samples, num_features).
+    """
+    X = []
+    labels = []
+
+    for batch in tqdm(dataloader):
+        samples, current_true_labels, _ = batch
+
+        if return_true_labels:
+            labels.extend(current_true_labels.tolist())
+
+        samples = samples.detach().numpy()
+        samples = np.reshape(samples, (batch_size, -1)).tolist()
+        X.extend(samples)
+
+    X = np.array(X, dtype=np.float32)
+    labels = np.array(labels, dtype=np.uint8)
+
+    return X, labels
 
 
 def download_file(
@@ -45,7 +75,7 @@ class SPCUP22DatasetDownloader:
                 part1:
                     link: https://www.dropbox.com/s/36yqmymkva2bwdi/spcup_2022_training_part1.zip?dl=1
                     filename: spcup_2022_training_part1.zip
-                    default_path: data/spcup22/training/part1/spcup_2022_training_part1 
+                    default_path: data/spcup22/training/part1/spcup_2022_training_part1
                 part2:
                     link: https://www.dropbox.com/s/wsmlthhri29fb79/spcup_2022_unseen.zip?dl=1
                     filename: spcup_2022_unseen.zip
@@ -80,7 +110,7 @@ class SPCUP22DatasetDownloader:
             we can change the name according to the entry in the dataset.yaml
             file
 
-        data_type: str 
+        data_type: str
             one of ("raw_audio", "mel_features", ...) (add other types as needed)
             the dataset.yaml file should be updated accordingly
         """
