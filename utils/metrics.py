@@ -1,12 +1,64 @@
-from typing import Union, List
+from typing import Callable, Union, List
 import pathlib
 from zipfile import ZipFile
+import numpy as np
 from sklearn.metrics import accuracy_score, f1_score
 import scikitplot as skplt
 import matplotlib.pyplot as plt
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
+from tqdm import tqdm
+
+
+def sklearn_make_predictions(
+    classifier,
+    data_module: pl.LightningDataModule,
+    batch_size: int,
+    mode: str = "training",
+):
+    """
+    Same as pytorch_lightning_make_predictions() but for sklearn based models
+    """
+    test_dataloader = data_module.test_dataloader()
+
+    actual_labels = []
+    predicted_labels = []
+    predicted_probabilities = []
+    filepaths = []
+
+    for batch in tqdm(test_dataloader):
+        samples, current_actual_labels, current_filepaths = batch
+
+        if isinstance(current_actual_labels, torch.Tensor):
+            current_actual_labels = current_actual_labels.tolist()
+
+        if isinstance(current_filepaths, torch.Tensor):
+            current_filepaths = current_filepaths.tolist()
+
+        filepaths.extend(current_filepaths)
+
+        if mode == "training":
+            actual_labels.extend(current_actual_labels)
+
+        samples = np.reshape(samples, newshape=(batch_size, -1))
+
+        current_predicted_probabilities = classifier.predict_proba(samples)
+        current_predicted_labels = np.argmax(
+            current_predicted_probabilities, axis=1
+        )
+
+        predicted_probabilities.extend(
+            current_predicted_probabilities.tolist()
+        )
+        predicted_labels.extend(current_predicted_labels.tolist())
+
+    return (
+        actual_labels,
+        predicted_labels,
+        predicted_probabilities,
+        filepaths,
+    )
 
 
 def pytorch_lightning_make_predictions(
@@ -34,7 +86,7 @@ def pytorch_lightning_make_predictions(
         actual labels.
     """
     checkpoint.eval()
-    trainer = pl.Trainer(gpus=torch.cuda.device_count(), accelerator="ddp")
+    trainer = pl.Trainer(gpus=torch.cuda.device_count(), accelerator="gpu")
     predictions = trainer.predict(checkpoint, datamodule=data_module)
 
     filepaths = []
@@ -57,7 +109,7 @@ def pytorch_lightning_make_predictions(
 
     if mode == "training":
         for data in data_module.test_data:
-            actual_labels.append(data[-1])
+            actual_labels.append(data[-2])
 
     return (
         actual_labels,
@@ -87,57 +139,111 @@ def print_scores(
     )
 
 
+def plot_figure(
+    plotting_func: Callable,
+    title: str,
+    actual_labels,
+    predicted_labels=None,
+    predicted_probabilities=None,
+    cmap="Greys",
+    dpi=200,
+):
+    """
+    Args:
+        plotting_func: reference to one of the following:
+            (
+                skplt.metrics.plot_confusion_matrix,
+                skplt.metrics.plot_precision_recall,
+                skplt.metrics.plot_roc
+            )
+    """
+    if predicted_labels is not None and predicted_probabilities is not None:
+        raise Exception(
+            "Both predicted_labels and predicted_probabilities were passed"
+        )
+
+    predicted = None
+    if predicted_labels is not None:
+        predicted = predicted_labels
+    else:
+        predicted = predicted_probabilities
+
+    SMALL_SIZE = 12
+    MEDIUM_SIZE = 14
+    BIGGER_SIZE = 16
+
+    plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
+    plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
+    plt.rc("axes", labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
+    plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+    plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+    plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
+    plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+    plt.tight_layout()
+    fig, ax = plt.subplots(1, 1, dpi=dpi)
+
+    plotting_func(
+        actual_labels, predicted, title=title, cmap=cmap, ax=ax,
+    )
+
+    # remove the colorbar as suggested
+    try:
+        ax.set_title("")
+        ax.set_ylabel("")
+        ax.images[0].colorbar.remove()
+    except Exception:
+        pass
+
+    return fig
+
+
 def plot_classification_report(
     actual_labels,
     predicted_labels,
     predicted_probabilities,
     title_suffix,
     save_path,
-    figsize=(10, 10),
-    dpi=300,
+    dpi=200,
 ):
     """
     plots the confusion matrix, precision recall curves and roc curves
     for a given set of labels and predictions.
     """
     root = pathlib.Path(save_path)
-    fig, ax = plt.subplots(1, 1, figsize=figsize, dpi=dpi)
-    plt.tight_layout()
 
-    skplt.metrics.plot_confusion_matrix(
+    fig = plot_figure(
+        skplt.metrics.plot_confusion_matrix,
+        "",
         actual_labels,
-        predicted_labels,
-        title="Confusion Matrix: {}".format(title_suffix),
-        ax=ax,
+        predicted_labels=predicted_labels,
+        dpi=dpi,
+    )
+    fig.savefig(
+        root.joinpath("cnf_matrix.eps"), format="eps", bbox_inches="tight"
     )
 
-    fig.savefig(root.joinpath("cnf_matrix.eps"), format="eps")
-
-    fig, ax = plt.subplots(1, 1, figsize=figsize, dpi=dpi)
-    plt.tight_layout()
-
-    skplt.metrics.plot_precision_recall(
+    fig = plot_figure(
+        skplt.metrics.plot_precision_recall,
+        "",
         actual_labels,
-        predicted_probabilities,
-        title="Precision-Recall Curve: {}".format(title_suffix),
-        figsize=(6, 6),
-        ax=ax,
+        predicted_probabilities=predicted_probabilities,
+        dpi=dpi,
+    )
+    fig.savefig(
+        root.joinpath("precision_recall.eps"),
+        format="eps",
+        bbox_inches="tight",
     )
 
-    fig.savefig(root.joinpath("precision_recall.eps"), format="eps")
-
-    fig, ax = plt.subplots(1, 1, figsize=figsize, dpi=dpi)
-    plt.tight_layout()
-
-    skplt.metrics.plot_roc(
+    fig = plot_figure(
+        skplt.metrics.plot_roc,
+        "",
         actual_labels,
-        predicted_probabilities,
-        title="ROC Curve: {}".format(title_suffix),
-        figsize=(6, 6),
-        ax=ax,
+        predicted_probabilities=predicted_probabilities,
+        dpi=dpi,
     )
-
-    fig.savefig(root.joinpath("roc.eps"), format="eps")
+    fig.savefig(root.joinpath("roc.eps"), format="eps", bbox_inches="tight")
 
 
 def write_answers(

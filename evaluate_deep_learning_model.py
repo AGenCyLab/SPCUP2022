@@ -29,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--model-checkpoint-path", default="./checkpoints", type=str
     )
+    parser.add_argument("--include-augmented-data", action="store_true")
     parser.add_argument(
         "--submission-path",
         type=str,
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     # WARNING: multi gpu inference causes duplicate answers.txt to be produced
     # in n_gpus folders under the submission folder. Using only one GPU is better
     # in this case
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
     model_name = args.model_type.replace("-", "_")
     feature_name = ""
@@ -57,9 +58,10 @@ if __name__ == "__main__":
 
     data_module = SPCUP22DataModule(
         training_config["training"]["batch_size"],
-        dataset_root=pathlib.Path("./data/spcup22").absolute(),
+        dataset_root=pathlib.Path("./data/raw_audio/spcup22").absolute(),
         config_file_path=args.dataset_config_file_path,
         should_load_eval_data=True,
+        should_include_augmented_data=args.include_augmented_data,
     )
     data_module.prepare_data()
     data_module.setup()

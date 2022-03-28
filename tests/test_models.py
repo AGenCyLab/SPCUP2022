@@ -19,7 +19,9 @@ class TestModels(unittest.TestCase):
 
     def prepare_datamodule(self, **kwargs):
         datamodule = SPCUP22DataModule(
-            self.BATCH_SIZE, str(ROOT.joinpath("data", "spcup22")), **kwargs
+            self.BATCH_SIZE,
+            dataset_root=str(ROOT.joinpath("data", "raw_audio", "spcup22")),
+            **kwargs
         )
         datamodule.prepare_data()
         datamodule.setup()

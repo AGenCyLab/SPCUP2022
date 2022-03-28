@@ -64,8 +64,4 @@ class SPCUP22Dataset(Dataset):
         if self.transform:
             audio, _ = self.transform((audio, label))
 
-        # in evaluation mode, we need the filepath
-        if self.mode == "eval":
-            return audio, label, filepath
-
-        return audio, label
+        return audio, label, filepath

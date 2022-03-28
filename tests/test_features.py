@@ -14,7 +14,8 @@ class TestFeatures(unittest.TestCase):
     def setUp(self) -> None:
         self.BATCH_SIZE = 16
         self.datamodule = SPCUP22DataModule(
-            self.BATCH_SIZE, str(ROOT.joinpath("data", "spcup22"))
+            self.BATCH_SIZE,
+            dataset_root=str(ROOT.joinpath("data", "raw_audio", "spcup22")),
         )
         self.datamodule.prepare_data()
         self.datamodule.setup()
@@ -35,12 +36,7 @@ class TestFeatures(unittest.TestCase):
         mfcc = MFCC(
             sr=sample_rate, n_mfcc=n_mfcc_expected, hop_length=hop_length
         )
-        mfcc_features, label = mfcc(
-            (
-                sample,
-                label,
-            )
-        )
+        mfcc_features, label = mfcc((sample, label,))
 
         num_samples, mfcc_count, num_features = mfcc_features.shape
         self.assertEqual(num_samples, 1)
