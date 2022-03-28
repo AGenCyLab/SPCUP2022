@@ -57,7 +57,7 @@ class TestFeatures(unittest.TestCase):
         self.assertEqual(sample_rate, 16000)
 
         cqcc_extractor = CQCC()
-        cqcc_features = cqcc_extractor(sample)
+        cqcc_features, _ = cqcc_extractor((sample, label))
 
         print(cqcc_features.shape)
 

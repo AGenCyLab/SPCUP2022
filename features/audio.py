@@ -42,7 +42,16 @@ class MFCC(object):
 
 
 class CQCC(object):
-    def __init__(self, fs=16000, B=96, d=16, cf=19, ZsdD="ZsdD"):
+    def __init__(
+        self,
+        num_coeffs_to_keep: int = 256,
+        fs: int = 16000,
+        B: int = 96,
+        d: int = 16,
+        cf: int = 19,
+        ZsdD: str = "ZsdD",
+    ):
+        self.num_coeffs_to_keep = num_coeffs_to_keep
         self.fs = fs
         self.B = B
         self.fmax = self.fs / 2
@@ -52,9 +61,11 @@ class CQCC(object):
         self.ZsdD = ZsdD
 
     def __call__(self, sample):
-        sample = sample.reshape(-1, 1)
+        y, label = sample
+        y = y.reshape(-1, 1)
+
         cqcc_feature, _, _, _, _, _, _ = cqcc(
-            sample,
+            y,
             self.fs,
             self.B,
             self.fmax,
@@ -64,7 +75,7 @@ class CQCC(object):
             self.ZsdD,
         )
 
-        return cqcc_feature
+        return cqcc_feature[: self.num_coeffs_to_keep, :], label
 
 
 class ToTensor(object):
