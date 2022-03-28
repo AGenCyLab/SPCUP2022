@@ -7,7 +7,7 @@ sys.path.append(str(ROOT))
 import unittest
 
 from datasets.SPCUP22DataModule import SPCUP22DataModule
-from features.audio import MFCC
+from features.audio import MFCC, CQCC
 
 
 class TestFeatures(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestFeatures(unittest.TestCase):
         assert hasattr(self.datamodule, "train_data")
         duration = 6
 
-        sample, label = self.datamodule.data.__getitem__(0)
+        sample, label, _ = self.datamodule.data.__getitem__(0)
         sample_rate = int(sample.shape[-1] / duration)
 
         n_mfcc_expected = 40
@@ -36,11 +36,30 @@ class TestFeatures(unittest.TestCase):
         mfcc = MFCC(
             sr=sample_rate, n_mfcc=n_mfcc_expected, hop_length=hop_length
         )
-        mfcc_features, label = mfcc((sample, label,))
+        mfcc_features, label = mfcc(
+            (
+                sample,
+                label,
+            )
+        )
 
         num_samples, mfcc_count, num_features = mfcc_features.shape
         self.assertEqual(num_samples, 1)
         self.assertEqual(mfcc_count, n_mfcc_expected)
+
+    def test_cqcc(self):
+        assert hasattr(self.datamodule, "train_data")
+        duration = 6
+
+        sample, label, _ = self.datamodule.data.__getitem__(0)
+        sample_rate = int(sample.shape[-1] / duration)
+
+        self.assertEqual(sample_rate, 16000)
+
+        cqcc_extractor = CQCC()
+        cqcc_features, _ = cqcc_extractor((sample, label))
+
+        print(cqcc_features.shape)
 
     def tearDown(self) -> None:
         self.datamodule.teardown()

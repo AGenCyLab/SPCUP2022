@@ -2,13 +2,59 @@ from typing import Callable, Union, List
 import pathlib
 from zipfile import ZipFile
 import numpy as np
+from sklearn.manifold import TSNE
 from sklearn.metrics import accuracy_score, f1_score
 import scikitplot as skplt
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
 from tqdm import tqdm
+import seaborn as sns
+
+
+def plot_tsne_features(
+    features: np.ndarray, actual_labels: Union[np.ndarray, List], title: str
+):
+    cmap = mpl.cm.Greys(np.linspace(0, 1, 20))
+    cmap = mpl.colors.ListedColormap(cmap[10:, :-1])
+    markers = ["o", "v", "X", "d", "s", "P"]
+    X_embedded = TSNE(
+        n_components=2, learning_rate="auto", init="pca"
+    ).fit_transform(features)
+
+    plt.tight_layout()
+    fig, ax = plt.subplots(1, 1, dpi=300)
+
+    graph = sns.scatterplot(
+        x=X_embedded[:, 0],
+        y=X_embedded[:, 1],
+        hue=actual_labels,
+        palette=cmap,
+        style=actual_labels,
+        markers=markers,
+        s=50,
+        alpha=1.0,
+        rasterized=True,
+        ax=ax,
+    )
+    plt.xticks([], [])
+    plt.yticks([], [])
+    plt.title(title)
+    ax.get_legend().remove()
+
+    # plt.legend(loc="lower left", bbox_to_anchor=(0.25, -0.3), ncol=2)
+    # legend = graph.legend_
+    # for j, (actual_label, label) in enumerate(
+    #     zip(np.unique(actual_labels), np.unique(actual_labels))
+    # ):
+    #     if label == 5:
+    #         legend.get_texts()[j].set_text(f"Unknown Algorithm")
+    #     else:
+    #         legend.get_texts()[j].set_text(f"Algorithm {label}")
+
+    return fig, ax
 
 
 def sklearn_make_predictions(
@@ -65,6 +111,7 @@ def pytorch_lightning_make_predictions(
     checkpoint: pl.LightningModule,
     data_module: pl.LightningDataModule,
     mode: str = "training",
+    return_final_layer_features: bool = False,
 ):
     """
     only to be used with pytorch lightning checkpoints and data module.
@@ -84,6 +131,11 @@ def pytorch_lightning_make_predictions(
         on a subset of heldout data from the training set and not on the actual
         eval set. Since the eval set has no labels, it's not possible to have
         actual labels.
+
+        return_final_layer_features: bool
+        If the loaded checkpoint has been implemented in a way so that it can
+        return final layer features (before softmax), pass True here to obtain
+        those features. Useful for feature space visualization.
     """
     checkpoint.eval()
     trainer = pl.Trainer(gpus=torch.cuda.device_count(), accelerator="gpu")
@@ -92,9 +144,14 @@ def pytorch_lightning_make_predictions(
     filepaths = []
     flattened_predictions = []
     flattened_probabilities = []
+    final_layer_features = []
 
     for batch in predictions:
-        current_predictions, current_filepaths = batch
+        if return_final_layer_features:
+            current_predictions, current_filepaths, current_features = batch
+            final_layer_features.extend(current_features.tolist())
+        else:
+            current_predictions, current_filepaths, _ = batch
 
         for prediction, filepath in zip(
             current_predictions, current_filepaths
@@ -111,6 +168,15 @@ def pytorch_lightning_make_predictions(
         for data in data_module.test_data:
             actual_labels.append(data[-2])
 
+    if return_final_layer_features:
+        return (
+            actual_labels,
+            flattened_predictions,
+            flattened_probabilities,
+            filepaths,
+            final_layer_features,
+        )
+
     return (
         actual_labels,
         flattened_predictions,
@@ -120,7 +186,8 @@ def pytorch_lightning_make_predictions(
 
 
 def print_scores(
-    actual_labels, predicted_labels,
+    actual_labels,
+    predicted_labels,
 ):
     """
     prints out f1 score (micro average) and accuracy scores. useful
@@ -184,7 +251,11 @@ def plot_figure(
     fig, ax = plt.subplots(1, 1, dpi=dpi)
 
     plotting_func(
-        actual_labels, predicted, title=title, cmap=cmap, ax=ax,
+        actual_labels,
+        predicted,
+        title=title,
+        cmap=cmap,
+        ax=ax,
     )
 
     # remove the colorbar as suggested
@@ -257,13 +328,13 @@ def write_answers(
     Args:
         submission_path: either a str or a pathlib.Path object with the path
         to the folder where the answers should be stored
-    
+
         flattened_predictions: a 1D list of predictions
 
         filepaths: a 1D list of filepaths. The indices should correspond to the
         predictions
 
-    Returns: 
+    Returns:
         None
     """
     answers = []

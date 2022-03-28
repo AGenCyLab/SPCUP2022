@@ -1,5 +1,15 @@
+import sys
+import pathlib
+
+ROOT = pathlib.Path(__file__).parent.parent
+sys.path.append(str(ROOT))
+
+CQCC_PATH = ROOT.joinpath("features", "cqcc")
+sys.path.append(str(CQCC_PATH))
+
 import torch
 import librosa
+from features.cqcc.CQCC.cqcc import cqcc
 
 
 class MFCC(object):
@@ -11,7 +21,7 @@ class MFCC(object):
         hop_length: [int]
             number of samples between successive frames
 
-        n_mfcc: [int] 
+        n_mfcc: [int]
             number of MFCCs to return
     """
 
@@ -29,6 +39,43 @@ class MFCC(object):
         )
 
         return mfcc, label
+
+
+class CQCC(object):
+    def __init__(
+        self,
+        num_coeffs_to_keep: int = 256,
+        fs: int = 16000,
+        B: int = 96,
+        d: int = 16,
+        cf: int = 19,
+        ZsdD: str = "ZsdD",
+    ):
+        self.num_coeffs_to_keep = num_coeffs_to_keep
+        self.fs = fs
+        self.B = B
+        self.fmax = self.fs / 2
+        self.fmin = self.fmax / 2 ** 9
+        self.d = d
+        self.cf = cf
+        self.ZsdD = ZsdD
+
+    def __call__(self, sample):
+        y, label = sample
+        y = y.reshape(-1, 1)
+
+        cqcc_feature, _, _, _, _, _, _ = cqcc(
+            y,
+            self.fs,
+            self.B,
+            self.fmax,
+            self.fmin,
+            self.d,
+            self.cf,
+            self.ZsdD,
+        )
+
+        return cqcc_feature[: self.num_coeffs_to_keep, :], label
 
 
 class ToTensor(object):

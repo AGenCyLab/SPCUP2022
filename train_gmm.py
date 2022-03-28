@@ -7,7 +7,7 @@ import torch
 from utils.dataset import get_numpy_dataset_from_dataloader
 from utils.config import load_config_file
 from datasets.SPCUP22DataModule import SPCUP22DataModule
-from features.audio import MFCC
+from features.audio import MFCC, CQCC
 from torchvision.transforms import Compose
 from tqdm import tqdm
 
@@ -19,6 +19,9 @@ def build_parser() -> ArgumentParser:
         "--dataset-config-file-path",
         default="config/dataset.yaml",
         type=str,
+    )
+    parser.add_argument(
+        "--feature-to-use", default="mfcc", choices=["mfcc", "cqcc"]
     )
     parser.add_argument(
         "--training-config-file-path",
@@ -66,9 +69,12 @@ if __name__ == "__main__":
     n_mfcc = train_config["features"]["n_mfcc"]
     hop_length = train_config["features"]["hop_length"]
 
-    # feature
-    mfcc_extractor = MFCC(n_mfcc=n_mfcc, hop_length=hop_length)
-    transforms = Compose([mfcc_extractor])
+    if args.feature_to_use == "mfcc":
+        extractor = MFCC(n_mfcc=n_mfcc, hop_length=hop_length)
+    else:
+        extractor = CQCC()
+
+    transforms = Compose([extractor])
 
     data_module = SPCUP22DataModule(
         batch_size,
@@ -86,7 +92,7 @@ if __name__ == "__main__":
     print("Number of samples:", len(data_module.data.annotations_df))
 
     train_data = data_module.train_dataloader()
-    X = get_numpy_dataset_from_dataloader(train_data, batch_size)
+    X, _ = get_numpy_dataset_from_dataloader(train_data, batch_size)
 
     estimator = GaussianMixture(
         num_components=data_module.num_classes,

@@ -37,6 +37,7 @@ class ResTSSDNetWrapper(pl.LightningModule):
         num_classes: int = 5,
         learning_rate: float = 1e-3,
         exp_lr_scheduler_gamma: float = 0.95,
+        return_features: bool = False,
     ) -> None:
         super().__init__()
         self.save_hyperparameters()
@@ -44,6 +45,7 @@ class ResTSSDNetWrapper(pl.LightningModule):
         self.learning_rate = learning_rate
         self.exp_lr_scheduler_gamma = exp_lr_scheduler_gamma
         self.final_layer = nn.Linear(32, num_classes)
+        self.return_features = return_features
 
     def forward(self, x):
         model = self.res_tssd_net
@@ -67,7 +69,11 @@ class ResTSSDNetWrapper(pl.LightningModule):
         x = F.relu(model.fc2(x))
         logits = self.final_layer(x)
 
-        return logits
+        features = None
+        if self.return_features:
+            features = x
+
+        return logits, features
 
     def configure_optimizers(self):
         return get_optimizers(
@@ -76,7 +82,7 @@ class ResTSSDNetWrapper(pl.LightningModule):
 
     def training_step(self, batch, batch_idx: int):
         inputs, labels = batch
-        logits = self.forward(inputs)
+        logits, _ = self.forward(inputs)
 
         loss = F.cross_entropy(logits, labels)
 
@@ -88,19 +94,26 @@ class ResTSSDNetWrapper(pl.LightningModule):
     def validation_step(self, val_batch, batch_idx: int):
         with torch.no_grad():
             inputs, labels = val_batch
-            logits = self.forward(inputs)
+            logits, _ = self.forward(inputs)
 
             loss = F.cross_entropy(logits, labels)
 
             self.log("val_loss", loss.item())
 
     def predict_step(
-        self, batch, batch_idx: int, dataloader_idx: Optional[int] = None,
+        self,
+        batch,
+        batch_idx: int,
+        dataloader_idx: Optional[int] = None,
     ):
         with torch.no_grad():
             inputs, _, filepaths = batch
-            logits = self.forward(inputs)
-            return logits, filepaths
+            logits, features = self.forward(inputs)
+
+            if self.return_features:
+                return logits, filepaths, features
+
+            return logits, filepaths, None
 
 
 class IncTSSDNetWrapper(pl.LightningModule):
@@ -109,6 +122,7 @@ class IncTSSDNetWrapper(pl.LightningModule):
         num_classes: int = 5,
         learning_rate: float = 1e-3,
         exp_lr_scheduler_gamma: float = 0.95,
+        return_features: bool = False,
     ) -> None:
         super().__init__()
         self.save_hyperparameters()
@@ -116,6 +130,7 @@ class IncTSSDNetWrapper(pl.LightningModule):
         self.learning_rate = learning_rate
         self.exp_lr_scheduler_gamma = exp_lr_scheduler_gamma
         self.final_layer = nn.Linear(32, num_classes)
+        self.return_features = return_features
 
     def forward(self, x):
         model = self.inc_tssd_net
@@ -134,7 +149,11 @@ class IncTSSDNetWrapper(pl.LightningModule):
         x = F.relu(model.fc2(x))
         logits = self.final_layer(x)
 
-        return logits
+        features = None
+        if self.return_features:
+            features = x
+
+        return logits, features
 
     def configure_optimizers(self):
         return get_optimizers(
@@ -143,7 +162,7 @@ class IncTSSDNetWrapper(pl.LightningModule):
 
     def training_step(self, batch, batch_idx: int):
         inputs, labels = batch
-        logits = self.forward(inputs)
+        logits, _ = self.forward(inputs)
 
         loss = F.cross_entropy(logits, labels)
 
@@ -155,16 +174,23 @@ class IncTSSDNetWrapper(pl.LightningModule):
     def validation_step(self, val_batch, batch_idx: int):
         with torch.no_grad():
             inputs, labels = val_batch
-            logits = self.forward(inputs)
+            logits, _ = self.forward(inputs)
 
             loss = F.cross_entropy(logits, labels)
 
             self.log("val_loss", loss.item())
 
     def predict_step(
-        self, batch, batch_idx: int, dataloader_idx: Optional[int] = None,
+        self,
+        batch,
+        batch_idx: int,
+        dataloader_idx: Optional[int] = None,
     ):
         with torch.no_grad():
             inputs, _, filepaths = batch
-            logits = self.forward(inputs)
-            return logits, filepaths
+            logits, features = self.forward(inputs)
+
+            if self.return_features:
+                return logits, filepaths, features
+
+            return logits, filepaths, None
