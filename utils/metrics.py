@@ -17,15 +17,16 @@ import seaborn as sns
 def plot_tsne_features(
     features: np.ndarray, actual_labels: Union[np.ndarray, List], title: str
 ):
-    cmap = mpl.cm.Greys(np.linspace(0, 1, 20))
-    cmap = mpl.colors.ListedColormap(cmap[10:, :-1])
+    cmap = mpl.cm.plasma(np.linspace(0, 1, 20))
+    cmap = mpl.colors.ListedColormap(cmap[:-5, :-1])
     markers = ["o", "v", "X", "d", "s", "P"]
+
     X_embedded = TSNE(
         n_components=2, learning_rate="auto", init="pca"
     ).fit_transform(features)
 
     plt.tight_layout()
-    fig, ax = plt.subplots(1, 1, dpi=300)
+    fig, ax = plt.subplots(1, 1, dpi=200)
 
     graph = sns.scatterplot(
         x=X_embedded[:, 0],
@@ -34,7 +35,7 @@ def plot_tsne_features(
         palette=cmap,
         style=actual_labels,
         markers=markers,
-        s=50,
+        s=100,
         alpha=1.0,
         rasterized=True,
         ax=ax,
