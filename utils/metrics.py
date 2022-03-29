@@ -15,10 +15,16 @@ import seaborn as sns
 
 
 def plot_tsne_features(
-    features: np.ndarray, actual_labels: Union[np.ndarray, List], title: str
+    features: np.ndarray,
+    actual_labels: Union[np.ndarray, List],
+    title: str,
+    use_grey: bool = False,
 ):
-    cmap = mpl.cm.plasma(np.linspace(0, 1, 20))
-    cmap = mpl.colors.ListedColormap(cmap[:-5, :-1])
+    if use_grey:
+        cmap = mpl.cm.Greys(np.linspace(0, 1, 20))
+        cmap = mpl.colors.ListedColormap(cmap[10:, :-1])
+    else:
+        cmap = sns.color_palette("hsv", n_colors=len(np.unique(actual_labels)))
     markers = ["o", "v", "X", "d", "s", "P"]
 
     X_embedded = TSNE(
