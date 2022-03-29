@@ -1,6 +1,6 @@
 import pathlib
 import sys
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 import pandas as pd
 
@@ -29,7 +29,8 @@ class SPCUP22DataModule(pl.LightningDataModule):
         should_load_eval_data: bool = False,
         val_pct: float = 0.1,
         test_pct: float = 0.2,
-        transform=None,
+        transform: Optional[Callable] = None,
+        num_workers: int = 8,
     ):
         """
         data_type is one of ("raw_audio", "mel_features", ...) and any other
@@ -55,6 +56,7 @@ class SPCUP22DataModule(pl.LightningDataModule):
 
         self.val_pct = val_pct
         self.test_pct = test_pct
+        self.num_workers = num_workers
 
         self.train_data_part1_path = self.dataset_root.joinpath(
             "training", "part1", "spcup_2022_training_part1"
@@ -63,10 +65,16 @@ class SPCUP22DataModule(pl.LightningDataModule):
             "training", "part2", "spcup_2022_unseen"
         )
         self.train_data_part1_aug_path = self.dataset_root.joinpath(
-            "training", "part1_aug", "part1_aug", "spcup_2022_training_part1",
+            "training",
+            "part1_aug",
+            "part1_aug",
+            "spcup_2022_training_part1",
         )
         self.train_data_part2_aug_path = self.dataset_root.joinpath(
-            "training", "part2_aug", "part2_aug", "spcup_2022_unseen",
+            "training",
+            "part2_aug",
+            "part2_aug",
+            "spcup_2022_unseen",
         )
         self.evaluation_data_part1_path = self.dataset_root.joinpath(
             "evaluation", "part1", "spcup_2022_eval_part1"
@@ -222,7 +230,10 @@ class SPCUP22DataModule(pl.LightningDataModule):
                 self.train_data_part1_aug_path, key="training_part1_aug"
             )
             combined_df = self.combine_dataframes_vertically(
-                (combined_df, df_aug_part1,)
+                (
+                    combined_df,
+                    df_aug_part1,
+                )
             )
 
         if self.should_include_unseen_in_training_data:
@@ -231,7 +242,10 @@ class SPCUP22DataModule(pl.LightningDataModule):
                 self.train_data_part2_path, key="training_part2"
             )
             combined_df = self.combine_dataframes_vertically(
-                (combined_df, df_part2,)
+                (
+                    combined_df,
+                    df_part2,
+                )
             )
 
             # augmented + unseen
@@ -240,7 +254,10 @@ class SPCUP22DataModule(pl.LightningDataModule):
                     self.train_data_part2_aug_path, key="training_part2_aug"
                 )
                 combined_df = self.combine_dataframes_vertically(
-                    (combined_df, df_aug_part2,)
+                    (
+                        combined_df,
+                        df_aug_part2,
+                    )
                 )
 
         self.data = SPCUP22Dataset(combined_df, transform=self.transform)
@@ -257,14 +274,14 @@ class SPCUP22DataModule(pl.LightningDataModule):
             self.train_data,
             batch_size=self.batch_size,
             shuffle=True,
-            num_workers=8,
+            num_workers=self.num_workers,
         )
 
     def val_dataloader(self):
         return DataLoader(
             self.val_data,
             batch_size=self.batch_size,
-            num_workers=8,
+            num_workers=self.num_workers,
             shuffle=False,
         )
 
@@ -272,7 +289,7 @@ class SPCUP22DataModule(pl.LightningDataModule):
         return DataLoader(
             self.test_data,
             batch_size=self.batch_size,
-            num_workers=8,
+            num_workers=self.num_workers,
             shuffle=False,
         )
 

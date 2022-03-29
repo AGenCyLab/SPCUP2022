@@ -1,12 +1,8 @@
-import os
-import torch
 from PIL import Image
 from torch.utils.data import Dataset
 import numpy as np
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-import pandas
-import torchvision
 
 RESIZE = 224
 
