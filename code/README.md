@@ -22,7 +22,10 @@ conda activate spcup_27612
 cd code && pip install -r requirements.txt
 ```
 
-The following sections assume that the user has changed the directory to `code/` and activated the proper environment before running any commands below.
+The following sections assume that 
+- The CUDA binaries are properly installed on the system.
+- If using Anaconda, the correct versions of `cudatoolkit` and `cudnn` are installed in the corresponding environment according to the system.
+- The user has changed the directory to `code/` and activated the proper environment before running any commands below.
 ## Performing inference on directory of `.wav` files
 
 `code/infer.py` should be used to perform inference on a given directory containing `.wav` files for generating predictions `.csv` file that contains mapping between filename and predicted label. It supports the following command line arguments:
