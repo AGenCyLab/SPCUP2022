@@ -15,6 +15,7 @@ from pytorch_lightning.callbacks import (
 )
 from utils.metrics import pytorch_lightning_make_predictions, write_answers
 
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
@@ -24,7 +25,9 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["VGG16", "ResNet18", "ResNet34"],
     )
     parser.add_argument(
-        "--dataset-config-file-path", default="config/mel_feature.yaml", type=str,
+        "--dataset-config-file-path",
+        default="config/mel_feature.yaml",
+        type=str,
     )
     parser.add_argument(
         "--training-config-file-path",
@@ -41,10 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="""The path in which the submission text file will be placed""",
     )
     parser.add_argument(
-        "--load-eval-data",
-        type=int,
-        default=0,
-        
+        "--load-eval-data", type=int, default=0, choices=[0, 1, 2]
     )
 
     return parser
@@ -61,33 +61,36 @@ if __name__ == "__main__":
 
     data_module = SPCUP22MelDataModule(
         training_config["training"]["batch_size"],
-        dataset_root=pathlib.Path("./data/spcup22").absolute(),
+        dataset_root=pathlib.Path("./data/mel_feature/spcup22").absolute(),
         config_file_path=args.dataset_config_file_path,
         should_load_eval_data=args.load_eval_data,
         num_workers=0,
     )
     data_module.prepare_data()
     data_module.setup()
-    
+
     hparams = {
         "network": args.model_type,
-        "num_classes":6,
-        "learning_rate":training_config["training"]["learning_rate"],
-        "lr_scheduler_factor":training_config["training"]["lr_scheduler_factor"],
-        "lr_scheduler_patience":training_config["training"]["lr_scheduler_patience"],
+        "num_classes": 6,
+        "learning_rate": training_config["training"]["learning_rate"],
+        "lr_scheduler_factor": training_config["training"][
+            "lr_scheduler_factor"
+        ],
+        "lr_scheduler_patience": training_config["training"][
+            "lr_scheduler_patience"
+        ],
     }
 
     classifier = CNNs.load_from_checkpoint(
         args.model_checkpoint_path,
         **hparams,
     )
-    
+
     if classifier is None:
         raise Exception("Invalid model_type '{}'".format(args.model_type))
-    
+
     feature_name = "mel_spectrogram"
     model_name = args.model_type.replace("-", "_")
-    feature_name = ""
     current_timestamp = datetime.now().strftime("%d-%m-%Y-%H-%M-%S")
 
     submission_path = pathlib.Path(args.submission_path).joinpath(

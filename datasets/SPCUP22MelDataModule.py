@@ -20,7 +20,8 @@ class SPCUP22MelDataModule(SPCUP22DataModule):
         dataset_name: str = "spcup22",
         should_include_augmented_data: bool = False,
         should_include_unseen_in_training_data: bool = False,
-        should_load_eval_data: bool = False,
+        # 0 = don't load eval data, 1 = load eval part 1, 2 = load eval part 2
+        should_load_eval_data: int = 0,
         val_pct: float = 0.1,
         test_pct: float = 0.2,
         num_workers: int = 0,
@@ -34,13 +35,14 @@ class SPCUP22MelDataModule(SPCUP22DataModule):
             dataset_name=dataset_name,
             should_include_augmented_data=should_include_augmented_data,
             should_include_unseen_in_training_data=should_include_unseen_in_training_data,
-            should_load_eval_data=should_load_eval_data,
+            should_load_eval_data=False,
             val_pct=val_pct,
             test_pct=test_pct,
             transform=None,
             num_workers=num_workers,
         )
 
+        self.should_load_eval_data = should_load_eval_data
         self.annotations_file_name = annotations_file_name
         self.train_data_path = self.dataset_root.joinpath(
             "training",
