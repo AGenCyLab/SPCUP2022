@@ -5,8 +5,8 @@ tssdnet:
     exp_lr_scheduler_gamma: 0.95
     save_checkpoint_epoch_interval: 1
   wandb:
-    project: spcup22
-    entity: mahieyin-rahmun
+    project: ""
+    entity: ""
 
 svm:
   features:

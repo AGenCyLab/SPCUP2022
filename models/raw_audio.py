@@ -81,7 +81,7 @@ class ResTSSDNetWrapper(pl.LightningModule):
         )
 
     def training_step(self, batch, batch_idx: int):
-        inputs, labels = batch
+        inputs, labels, _ = batch
         logits, _ = self.forward(inputs)
 
         loss = F.cross_entropy(logits, labels)
@@ -93,9 +93,8 @@ class ResTSSDNetWrapper(pl.LightningModule):
 
     def validation_step(self, val_batch, batch_idx: int):
         with torch.no_grad():
-            inputs, labels = val_batch
+            inputs, labels, _ = val_batch
             logits, _ = self.forward(inputs)
-
             loss = F.cross_entropy(logits, labels)
 
             self.log("val_loss", loss.item())
@@ -161,7 +160,7 @@ class IncTSSDNetWrapper(pl.LightningModule):
         )
 
     def training_step(self, batch, batch_idx: int):
-        inputs, labels = batch
+        inputs, labels, _ = batch
         logits, _ = self.forward(inputs)
 
         loss = F.cross_entropy(logits, labels)
@@ -173,7 +172,7 @@ class IncTSSDNetWrapper(pl.LightningModule):
 
     def validation_step(self, val_batch, batch_idx: int):
         with torch.no_grad():
-            inputs, labels = val_batch
+            inputs, labels, _ = val_batch
             logits, _ = self.forward(inputs)
 
             loss = F.cross_entropy(logits, labels)
