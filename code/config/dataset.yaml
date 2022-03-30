@@ -1,0 +1,28 @@
+spcup22:
+  raw_audio:
+    training:
+      part1:
+        link: https://www.dropbox.com/s/36yqmymkva2bwdi/spcup_2022_training_part1.zip?dl=1
+        filename: spcup_2022_training_part1.zip
+        default_path: training/part1/
+      part2:
+        link: https://www.dropbox.com/s/wsmlthhri29fb79/spcup_2022_unseen.zip?dl=1
+        filename: spcup_2022_unseen.zip
+        default_path: training/part2/
+      part1_aug:
+        link: https://onedrive.live.com/download?cid=7AC29D06407D53E6&resid=7AC29D06407D53E6%21107&authkey=AKUS_tvSnH8PhGc
+        filename: part1_aug.zip
+        default_path: training/part1_aug
+      part2_aug:
+        link: https://onedrive.live.com/download?cid=7AC29D06407D53E6&resid=7AC29D06407D53E6%21106&authkey=AFNh-UlHL4EOJ3A
+        filename: part2_aug.zip
+        default_path: training/part2_aug
+    evaluation:
+      part1:
+        link: https://www.dropbox.com/s/ftkyvwxgr9wl7jf/spcup_2022_eval_part1.zip?dl=1
+        filename: spcup_2022_eval_part1.zip
+        default_path: evaluation/part1/
+      part2:
+        link: https://www.dropbox.com/s/zylz07o2z0x308g/spcup_2022_eval_part2.zip?dl=1
+        filename: spcup_2022_eval_part2.zip
+        default_path: evaluation/part2/
