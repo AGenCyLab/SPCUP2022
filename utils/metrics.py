@@ -28,7 +28,12 @@ def plot_tsne_features(
     markers = ["o", "v", "X", "d", "s", "P"]
 
     X_embedded = TSNE(
-        n_components=2, learning_rate="auto", init="pca"
+        n_components=2,
+        # `auto` learning_rate leads to the following error on select devices:
+        # https://stackoverflow.com/questions/69785596/sklearn-manifold-tsne-typeerror-ufunc-multiply-did-not-contain-a-loop-with-si
+        # Comment out this kwarg if you face the above issue
+        # learning_rate="auto",
+        init="pca",
     ).fit_transform(features)
 
     plt.tight_layout()
