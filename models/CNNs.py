@@ -126,12 +126,28 @@ class CNNs(pl.LightningModule):
         learning_rate=1e-5,
         lr_scheduler_factor=0.1,
         lr_scheduler_patience=10,
+        return_features: bool = False,
     ):
-        super(CNNs, self).__init__()
+        """CNNs contains implimentation of VGG16, ResNet34, ResNet18.
+        This also includes implimentation for class functions from LightningModule module.
+
+        Args:
+            network (str, optional): Network name in string. Defaults to "".
+            num_classes (int, optional): Num of classes for the final layer. Defaults to 6.
+            learning_rate (_type_, optional): learning rate of the optimizer. Defaults to 1e-5.
+            lr_scheduler_factor (float, optional): Factor is used in lr scheduler to decrese learning rate over time. Defaults to 0.1.
+            lr_scheduler_patience (int, optional): Patince is used in lr scheduler to monitor performence on given loss. Defaults to 10.
+            return_features (bool, optional): Whether to include output from layer before final layer. Defaults to False.
+
+        Raises:
+            Exception: if the network name is not given or not found.
+        """
+        super(CNNs, self).__init__()\
 
         networks = ["VGG16", "ResNet34", "ResNet18"]
 
         self.network = network
+        self.return_features = return_features
 
         if self.network == "VGG16":
             self.net = models.vgg16_bn()
@@ -172,11 +188,22 @@ class CNNs(pl.LightningModule):
         )
 
     def forward(self, x):
-        return torch.sigmoid(self.net(x))
+        features = None
+        if self.network == "VGG16":
+            x = self.net.features(x)
+            x = self.net.avgpool(x)
+            x = nn.Flatten(1)(x)
+            if self.return_features:
+                features = self.net.classifier[:4](x)
+            logits = self.net.classifier(x)
+        else:
+            logits = torch.sigmoid(self.net(x))
+
+        return logits, features
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        logits = self(x.float())
+        logits, _ = self(x.float())
         correct_prediction = (torch.argmax(logits, 1) == y).sum()
 
         loss = F.cross_entropy(logits, y)
@@ -200,7 +227,7 @@ class CNNs(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         with torch.no_grad():
             x, y = batch
-            logits = self(x.float())
+            logits, _ = self(x.float())
             correct_prediction = (torch.argmax(logits, 1) == y).sum()
             loss = F.cross_entropy(logits, y)
 
@@ -220,7 +247,7 @@ class CNNs(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         with torch.no_grad():
             x, y = batch
-            logits = self(x.float())
+            logits, _ = self(x.float())
             correct_prediction = (torch.argmax(logits, 1) == y).sum()
             loss = F.cross_entropy(logits, y)
 
@@ -245,8 +272,9 @@ class CNNs(pl.LightningModule):
     def predict_step(self, batch, batch_idx):
         with torch.no_grad():
             inputs, _, filepaths = batch
-            logits = self.forward(inputs.float())
-            return logits, filepaths
+            logits, features = self.forward(inputs.float())
+
+            return logits, filepaths, features
 
     def configure_optimizers(self):
         return {
