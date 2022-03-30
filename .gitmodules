@@ -1,6 +1,3 @@
 [submodule "models/tssd_net"]
 	path = models/tssd_net
 	url = https://github.com/ghuawhu/end-to-end-synthetic-speech-detection
-[submodule "features/cqcc"]
-	path = features/cqcc
-	url = https://github.com/stoneMo/ASVspoof.git
