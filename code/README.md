@@ -76,6 +76,10 @@ For training, `train_tssdnet.py` is to be used. It accepts the following command
 
 The required datasets are automatically downloaded, given the existence of a properly formatted `config/dataset.yaml` file. The dataset is then divided into stratified, non-overlapping sets of training, validation and testing sets.
 
+```
+python train_tssdnet.py --checkpoint-path ./checkpoints/inc/ --gpu-indices 0,1 --epochs 200 --include-unseen-in-training-data --include-augmented-data
+```
+
 ## Testing the detector
 For testing, `test_tssdnet.py` is to be used. It accepts the following command line arguments:
 
@@ -90,6 +94,10 @@ For testing, `test_tssdnet.py` is to be used. It accepts the following command l
   Load part 2 of the evaluation dataset
 --submission-path SUBMISSION_PATH (Optional)
   The path in which the submission text file will be placed
+```
+
+```
+python test_tssdnet.py --model-checkpoint-path ./checkpoints/tssdnet/inc_tssdnet_with_unseen_aug/last.ckpt --load-augmented-data
 ```
 
 ## Notebooks
