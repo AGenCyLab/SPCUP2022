@@ -75,6 +75,9 @@ class CQCC(object):
             self.ZsdD,
         )
 
+        if self.num_coeffs_to_keep == -1:
+            return cqcc_feature, label
+
         return cqcc_feature[: self.num_coeffs_to_keep, :], label
 
 
