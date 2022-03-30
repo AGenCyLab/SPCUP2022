@@ -47,9 +47,9 @@ class TestModels(unittest.TestCase):
         model = self.get_model("res-tssdnet")
 
         for batch in tqdm(self.datamodule.train_dataloader()):
-            samples, labels = batch
+            samples, labels, _ = batch
             samples = samples.cuda()
-            output = model(samples)
+            output, _ = model(samples)
 
         self.assertEqual(
             output.shape, (self.BATCH_SIZE, self.datamodule.num_classes)
@@ -59,9 +59,9 @@ class TestModels(unittest.TestCase):
         model = self.get_model("inc-tssdnet")
 
         for batch in tqdm(self.datamodule.train_dataloader()):
-            samples, labels = batch
+            samples, labels, _ = batch
             samples = samples.cuda()
-            output = model(samples)
+            output, _ = model(samples)
 
         self.assertEqual(
             output.shape, (self.BATCH_SIZE, self.datamodule.num_classes)

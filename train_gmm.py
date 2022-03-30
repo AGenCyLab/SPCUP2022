@@ -1,7 +1,6 @@
 import os
 from argparse import ArgumentParser
 import pathlib
-import numpy as np
 from pycave.bayes.gmm.estimator import GaussianMixture
 import torch
 from utils.dataset import get_numpy_dataset_from_dataloader
@@ -9,7 +8,6 @@ from utils.config import load_config_file
 from datasets.SPCUP22DataModule import SPCUP22DataModule
 from features.audio import MFCC, CQCC
 from torchvision.transforms import Compose
-from tqdm import tqdm
 
 
 def build_parser() -> ArgumentParser:
@@ -102,6 +100,7 @@ if __name__ == "__main__":
             "accelerator": "gpu",
             "max_epochs": epochs,
             "gpus": torch.cuda.device_count(),
+            "strategy": "ddp",
         },
     )
     estimator.fit(X)

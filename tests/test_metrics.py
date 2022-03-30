@@ -37,7 +37,6 @@ class TestMetrics(unittest.TestCase):
             predicted_probabilities,
             title_suffix="Test",
             save_path=self.save_path,
-            figsize=(10, 10),
         )
 
         for filename in self.file_names:

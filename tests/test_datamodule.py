@@ -91,15 +91,15 @@ class TestDataModule(unittest.TestCase):
     def test_train_data_shape(self):
         datamodule = self.prepare_data_module()
 
-        sample, label = datamodule.train_data.__getitem__(0)
+        sample, label, _ = datamodule.train_data.__getitem__(0)
         self.assertEqual(sample.shape, (1, 96000))
         self.assertNotEqual(label, None)
 
-        sample, label = datamodule.test_data.__getitem__(0)
+        sample, label, _ = datamodule.test_data.__getitem__(0)
         self.assertEqual(sample.shape, (1, 96000))
         self.assertNotEqual(label, None)
 
-        sample, label = datamodule.val_data.__getitem__(0)
+        sample, label, _ = datamodule.val_data.__getitem__(0)
         self.assertEqual(sample.shape, (1, 96000))
         self.assertNotEqual(label, None)
 

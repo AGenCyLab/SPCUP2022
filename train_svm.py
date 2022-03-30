@@ -130,4 +130,3 @@ if __name__ == "__main__":
         pathlib.Path(args.checkpoint_save_path).joinpath(model_filename)
     )
     save_checkpoint(classifier, model_path, train_config["params"])
-

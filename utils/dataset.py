@@ -21,7 +21,7 @@ def get_numpy_dataset_from_dataloader(
     X = []
     labels = []
 
-    for batch in tqdm(dataloader):
+    for batch in tqdm(dataloader, desc="Dataloader to numpy: "):
         samples, current_true_labels, _ = batch
 
         if return_true_labels:
