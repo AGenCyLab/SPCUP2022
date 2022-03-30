@@ -158,7 +158,12 @@ def pytorch_lightning_make_predictions(
             current_predictions, current_filepaths, current_features = batch
             final_layer_features.extend(current_features.tolist())
         else:
-            current_predictions, current_filepaths, _ = batch
+            try:
+                current_predictions, current_filepaths, _ = batch
+            except ValueError:
+                # ResNet and VGG16 do not return features under any circumstances
+                # yet, so unpacking error occurs
+                current_predictions, current_filepaths = batch
 
         for prediction, filepath in zip(
             current_predictions, current_filepaths
@@ -215,12 +220,13 @@ def print_scores(
 
 def plot_figure(
     plotting_func: Callable,
-    title: str,
+    title: Union[str, None],
     actual_labels,
     predicted_labels=None,
     predicted_probabilities=None,
     cmap="Greys",
     dpi=200,
+    remove_y_label=False,
 ):
     """
     Args:
@@ -267,8 +273,12 @@ def plot_figure(
 
     # remove the colorbar as suggested
     try:
-        ax.set_title("")
-        ax.set_ylabel("")
+        if title is None:
+            ax.set_title("")
+
+        if remove_y_label:
+            ax.set_ylabel("")
+
         ax.images[0].colorbar.remove()
     except Exception:
         pass
@@ -280,8 +290,9 @@ def plot_classification_report(
     actual_labels,
     predicted_labels,
     predicted_probabilities,
-    title_suffix,
     save_path,
+    title_suffix=None,
+    remove_y_label=False,
     dpi=200,
 ):
     """
@@ -292,10 +303,11 @@ def plot_classification_report(
 
     fig = plot_figure(
         skplt.metrics.plot_confusion_matrix,
-        "",
+        title_suffix,
         actual_labels,
         predicted_labels=predicted_labels,
         dpi=dpi,
+        remove_y_label=remove_y_label,
     )
     fig.savefig(
         root.joinpath("cnf_matrix.eps"), format="eps", bbox_inches="tight"
@@ -303,10 +315,11 @@ def plot_classification_report(
 
     fig = plot_figure(
         skplt.metrics.plot_precision_recall,
-        "",
+        title_suffix,
         actual_labels,
         predicted_probabilities=predicted_probabilities,
         dpi=dpi,
+        remove_y_label=remove_y_label,
     )
     fig.savefig(
         root.joinpath("precision_recall.eps"),
@@ -316,10 +329,11 @@ def plot_classification_report(
 
     fig = plot_figure(
         skplt.metrics.plot_roc,
-        "",
+        title_suffix,
         actual_labels,
         predicted_probabilities=predicted_probabilities,
         dpi=dpi,
+        remove_y_label=remove_y_label,
     )
     fig.savefig(root.joinpath("roc.eps"), format="eps", bbox_inches="tight")
 
