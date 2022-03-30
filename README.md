@@ -2,6 +2,17 @@
 
 ## **Team ID: 27612**
 
+## Cloning the repository
+The repository depends on two submodules
+- [stoneMo/ASVspoof](https://github.com/stoneMo/ASVspoof.git) for their CQCC implementation  
+- [ghuawhu/end-to-end-synthetic-speech-detection](https://github.com/ghuawhu/end-to-end-synthetic-speech-detection) for their TSSDNet implementation. 
+
+Hence, use the `--recursive` flag when cloning.
+
+```
+git clone https://github.com/AGenCyLab/SPCUP2022.git --recursive
+```
+
 ## Development Environment
 1. It is recommended to use [Anaconda](https://www.anaconda.com/) to create a virtual environment before proceeding to run code.
 
