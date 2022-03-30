@@ -142,8 +142,7 @@ class CNNs(pl.LightningModule):
         Raises:
             Exception: if the network name is not given or not found.
         """
-        super(CNNs, self).__init__()\
-
+        super(CNNs, self).__init__()
         networks = ["VGG16", "ResNet34", "ResNet18"]
 
         self.network = network
@@ -202,7 +201,7 @@ class CNNs(pl.LightningModule):
         return logits, features
 
     def training_step(self, batch, batch_idx):
-        x, y = batch
+        x, y, _ = batch
         logits, _ = self(x.float())
         correct_prediction = (torch.argmax(logits, 1) == y).sum()
 
@@ -226,7 +225,7 @@ class CNNs(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         with torch.no_grad():
-            x, y = batch
+            x, y, _ = batch
             logits, _ = self(x.float())
             correct_prediction = (torch.argmax(logits, 1) == y).sum()
             loss = F.cross_entropy(logits, y)
@@ -246,7 +245,7 @@ class CNNs(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         with torch.no_grad():
-            x, y = batch
+            x, y, _ = batch
             logits, _ = self(x.float())
             correct_prediction = (torch.argmax(logits, 1) == y).sum()
             loss = F.cross_entropy(logits, y)
